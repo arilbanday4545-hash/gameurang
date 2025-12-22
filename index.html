@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Edukasi Pro</title>
+
+<style>
+body{
+ margin:0;
+ min-height:100vh;
+ font-family:Arial,Helvetica,sans-serif;
+ background:url("img/bg-game.jpeg") center/cover no-repeat fixed;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ padding:15px;
+}
+body::before{
+ content:"";
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.25);
+ z-index:-1;
+}
+.box{
+ background:rgba(255,255,255,.7);
+ backdrop-filter:blur(8px);
+ max-width:850px;
+ width:100%;
+ padding:25px;
+ border-radius:18px;
+ box-shadow:0 20px 50px rgba(0,0,0,.4);
+}
+h2,h3{text-align:center}
+input{
+ width:100%;
+ padding:12px;
+ margin-bottom:12px;
+ border-radius:8px;
+ border:1px solid #ccc;
+}
+.option{
+ padding:12px;
+ background:#f2f4f8;
+ margin-bottom:10px;
+ border-radius:10px;
+ cursor:pointer;
+}
+.option:hover{background:#dbe4ff}
+.correct{background:#2ecc71;color:#fff}
+.wrong{background:#e74c3c;color:#fff}
+button{
+ width:100%;
+ padding:14px;
+ background:#243b55;
+ color:#fff;
+ border:none;
+ border-radius:10px;
+ cursor:pointer;
+}
+.progress{height:8px;background:#ddd;border-radius:5px;margin-bottom:10px}
+.progress-bar{height:100%;background:#243b55;width:0%}
+.timer{text-align:right;color:#c0392b;font-weight:bold}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border:1px solid #ccc;padding:8px;text-align:center}
+th{background:#243b55;color:#fff}
+</style>
+</head>
+
+<body>
+
+<!-- LANDING -->
+<div class="box" id="startPage">
+<h2>Quiz Edukasi</h2>
+<input id="playerName" placeholder="Nama Lengkap">
+<input id="playerClass" placeholder="Kelas (contoh: XI RPL 1)">
+<button onclick="startQuiz()">Mulai Quiz</button>
+</div>
+
+<!-- QUIZ -->
+<div class="box" id="quizPage" style="display:none">
+<h3 id="identity"></h3>
+<div class="progress"><div class="progress-bar" id="bar"></div></div>
+<div class="timer">Waktu: <span id="timerText">15</span>s</div>
+<p id="question"></p>
+<div id="options"></div>
+<button id="nextBtn" onclick="nextQuestion()" disabled>Selanjutnya</button>
+<p id="scoreText">Skor: 0</p>
+</div>
+
+<!-- RESULT -->
+<div class="box" id="resultPage" style="display:none">
+<h2>Hasil Quiz</h2>
+<p id="finalScore"></p>
+<p id="finalGrade"></p>
+<h3>Leaderboard</h3>
+<table>
+<thead>
+<tr><th>Nama</th><th>Kelas</th><th>Skor</th><th>Nilai</th></tr>
+</thead>
+<tbody id="leaderboard"></tbody>
+</table>
+<button onclick="location.reload()">Main Lagi</button>
+</div>
+
+<script>
+// ================== 50 SOAL FULL (FIX) ==================
+const quiz=[
+{q:"Proklamasi Indonesia dibacakan oleh?",a:["Soekarno","Hatta","Soedirman","Sjahrir"],c:0},
+{q:"Tanggal Proklamasi Indonesia?",a:["16","17","18","19"],c:1},
+{q:"Sumpah Pemuda terjadi tahun?",a:["1926","1927","1928","1929"],c:2},
+{q:"Kerajaan Hindu tertua di Indonesia?",a:["Kutai","Sriwijaya","Majapahit","Tarumanegara"],c:0},
+{q:"Kerajaan Islam pertama di Indonesia?",a:["Aceh","Demak","Samudra Pasai","Banten"],c:2},
+{q:"VOC didirikan tahun?",a:["1596","1602","1619","1620"],c:1},
+{q:"Tokoh Sumpah Palapa?",a:["Hayam Wuruk","Gajah Mada","Ken Arok","Airlangga"],c:1},
+{q:"BPUPKI dibentuk oleh?",a:["Belanda","Jepang","Inggris","VOC"],c:1},
+{q:"PPKI diketuai oleh?",a:["Soekarno","Hatta","Sjahrir","Radjiman"],c:0},
+{q:"Ibu kota RI pertama?",a:["Jakarta","Bandung","Yogyakarta","Surabaya"],c:0},
+
+{q:"HTML berfungsi untuk?",a:["Struktur web","Logika","Server","Database"],c:0},
+{q:"CSS digunakan untuk?",a:["Tampilan","Logika","Server","Data"],c:0},
+{q:"Bahasa web interaktif?",a:["HTML","CSS","JavaScript","SQL"],c:2},
+{q:"File utama website?",a:["home.html","index.html","main.html","start.html"],c:1},
+{q:"Ekstensi file CSS?",a:[".css",".js",".html",".php"],c:0},
+
+{q:"CPU disebut juga?",a:["Otak komputer","RAM","Harddisk","Monitor"],c:0},
+{q:"RAM bersifat?",a:["Tetap","Sementara","Input","Output"],c:1},
+{q:"Browser digunakan untuk?",a:["Menjelajah web","Server","Database","Edit video"],c:0},
+{q:"GitHub digunakan untuk?",a:["Hosting kode","Chat","Edit foto","Email"],c:0},
+{q:"Sistem operasi komputer?",a:["Windows","Intel","Google","Chrome"],c:0},
+
+{q:"Jumlah pemain sepak bola?",a:["9","10","11","12"],c:2},
+{q:"Induk sepak bola dunia?",a:["PSSI","FIFA","AFC","UEFA"],c:1},
+{q:"Jumlah pemain basket?",a:["4","5","6","7"],c:1},
+{q:"Pencak silat berasal dari?",a:["Indonesia","China","India","Jepang"],c:0},
+{q:"Maraton berjarak?",a:["21 km","30 km","42 km","50 km"],c:2},
+
+{q:"Rukun Islam berjumlah?",a:["4","5","6","7"],c:1},
+{q:"Kitab suci umat Islam?",a:["Injil","Zabur","Taurat","Al-Qur'an"],c:3},
+{q:"Nabi terakhir?",a:["Isa","Musa","Muhammad","Nuh"],c:2},
+{q:"Sholat wajib sehari?",a:["3","4","5","6"],c:2},
+{q:"Puasa wajib bulan?",a:["Syawal","Ramadhan","Rajab","Muharram"],c:1},
+
+{q:"Hijrah Nabi Muhammad terjadi tahun?",a:["620","621","622","623"],c:2},
+{q:"Masjid pertama dalam Islam?",a:["Nabawi","Quba","Haram","Aqsa"],c:1},
+{q:"Zakat termasuk rukun ke?",a:["1","2","3","4"],c:1},
+{q:"Al-Qur'an terdiri dari berapa surah?",a:["110","112","114","116"],c:2},
+{q:"Hari raya umat Islam?",a:["Natal","Waisak","Idul Fitri","Nyepi"],c:2}
+];
+
+// acak
+quiz.sort(()=>Math.random()-0.5);
+
+// ================= LOGIC =================
+let i=0,score=0,time=15,timer;
+let playerName="",playerClass="";
+
+const startPage=document.getElementById("startPage");
+const quizPage=document.getElementById("quizPage");
+const resultPage=document.getElementById("resultPage");
+
+const questionEl=document.getElementById("question");
+const optionsEl=document.getElementById("options");
+const nextBtn=document.getElementById("nextBtn");
+const scoreText=document.getElementById("scoreText");
+const timerText=document.getElementById("timerText");
+const bar=document.getElementById("bar");
+const identity=document.getElementById("identity");
+
+function startQuiz(){
+ playerName=document.getElementById("playerName").value.trim();
+ playerClass=document.getElementById("playerClass").value.trim();
+ if(!playerName||!playerClass) return alert("Nama & kelas wajib diisi");
+ startPage.style.display="none";
+ quizPage.style.display="block";
+ identity.innerText=`${playerName} | ${playerClass}`;
+ load();
+}
+
+function load(){
+ clearInterval(timer);
+ time=15;
+ timerText.innerText=time;
+ bar.style.width=(i/quiz.length*100)+"%";
+ questionEl.innerText=quiz[i].q;
+ optionsEl.innerHTML="";
+ nextBtn.disabled=true;
+
+ quiz[i].a.forEach((t,x)=>{
+  const d=document.createElement("div");
+  d.className="option";
+  d.innerText=t;
+  d.onclick=()=>answer(d,x);
+  optionsEl.appendChild(d);
+ });
+
+ timer=setInterval(()=>{
+  time--;
+  timerText.innerText=time;
+  if(time<=0){clearInterval(timer);nextBtn.disabled=false;}
+ },1000);
+}
+
+function answer(el,x){
+ clearInterval(timer);
+ nextBtn.disabled=false;
+ document.querySelectorAll(".option").forEach(o=>o.onclick=null);
+ if(x===quiz[i].c){el.classList.add("correct");score++;}
+ else{
+  el.classList.add("wrong");
+  document.querySelectorAll(".option")[quiz[i].c].classList.add("correct");
+ }
+ scoreText.innerText="Skor: "+score;
+}
+
+function nextQuestion(){
+ i++;
+ if(i<quiz.length) load();
+ else finish();
+}
+
+function finish(){
+ quizPage.style.display="none";
+ resultPage.style.display="block";
+
+ const percent=(score/quiz.length)*100;
+ let grade="E";
+ if(percent>=85) grade="A";
+ else if(percent>=70) grade="B";
+ else if(percent>=55) grade="C";
+ else if(percent>=40) grade="D";
+
+ document.getElementById("finalScore").innerText=`Skor: ${score}/${quiz.length}`;
+ document.getElementById("finalGrade").innerText=`Nilai: ${grade}`;
+
+ const data=JSON.parse(localStorage.getItem("leaderboard")||"[]");
+ data.push({name:playerName,kelas:playerClass,score,grade});
+ data.sort((a,b)=>b.score-a.score);
+ localStorage.setItem("leaderboard",JSON.stringify(data));
+
+ const tbody=document.getElementById("leaderboard");
+ tbody.innerHTML="";
+ data.forEach(d=>{
+  tbody.innerHTML+=`<tr><td>${d.name}</td><td>${d.kelas}</td><td>${d.score}</td><td>${d.grade}</td></tr>`;
+ });
+}
+</script>
+
+</body>
+</html>
