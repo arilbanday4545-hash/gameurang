@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Edukasi</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ min-height:100vh;
+ font-family:Arial,Helvetica,sans-serif;
+ background:url("Cuplikan layar_13-12-2025_95750_127.0.0.1.jpeg") center/cover no-repeat fixed;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ padding:15px;
+}
+body::before{
+ content:"";
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.12);
+ z-index:-1;
+}
+.box{
+ background:rgba(255,255,255,.72);
+ backdrop-filter:blur(8px);
+ border:1px solid rgba(255,255,255,.4);
+ width:100%;
+ max-width:700px;
+ padding:25px;
+ border-radius:16px;
+ box-shadow:0 25px 60px rgba(0,0,0,.45);
+ animation:fade .5s ease;
+}
+@keyframes fade{
+ from{opacity:0;transform:translateY(15px)}
+ to{opacity:1}
+}
+h2{text-align:center;margin-top:0;color:#243b55}
+input,button{
+ width:100%;
+ padding:12px;
+ font-size:16px;
+ border-radius:8px;
+}
+input{border:1px solid #bbb;margin:15px 0}
+button{
+ background:#243b55;
+ color:#fff;
+ border:none;
+ cursor:pointer;
+}
+button:disabled{background:#aaa}
+.progress{
+ height:8px;
+ background:#ddd;
+ border-radius:5px;
+ overflow:hidden;
+ margin-bottom:8px;
+}
+.progress-bar{
+ height:100%;
+ width:0%;
+ background:#243b55;
+ transition:.3s;
+}
+.info{
+ display:flex;
+ justify-content:space-between;
+ font-size:14px;
+ font-weight:bold;
+ margin-bottom:6px;
+}
+.timer{
+ text-align:right;
+ font-weight:bold;
+ color:#c0392b;
+ margin-bottom:8px;
+}
+.danger{animation:blink .8s infinite}
+@keyframes blink{50%{opacity:.4}}
+.option{
+ padding:12px;
+ margin-bottom:10px;
+ background:#f2f4f8;
+ border-radius:8px;
+ cursor:pointer;
+ transition:.25s;
+}
+.option:hover{background:#dde6ff}
+.correct{background:#2ecc71!important;color:#fff}
+.wrong{background:#e74c3c!important;color:#fff}
+.score{text-align:center;font-weight:bold;margin-top:10px}
+@media(max-width:600px){
+ .box{padding:18px}
+ .option{font-size:14px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="box" id="startPage">
+ <h2>Quiz Edukasi</h2>
+ <p>Masukkan nama untuk mulai</p>
+ <input id="username" placeholder="Nama kamu">
+ <button onclick="startQuiz()">Mulai</button>
+</div>
+
+<div class="box" id="quizPage" style="display:none">
+ <h2 id="welcome"></h2>
+
+ <div class="info">
+  <span id="counter">Soal 1 / 50</span>
+  <span id="percent">0%</span>
+ </div>
+
+ <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+ <div class="timer">Waktu: <span id="time">15</span>s</div>
+
+ <p id="question"></p>
+ <div id="options"></div>
+
+ <button id="nextBtn" onclick="nextQuestion()" disabled>Selanjutnya</button>
+ <div class="score" id="score">Skor: 0</div>
+</div>
+
+<script>
+const quiz=[
+// ===== SEJARAH =====
+{q:"Proklamasi Indonesia terjadi tanggal?",a:["16 Agustus","17 Agustus","18 Agustus","19 Agustus"],c:1},
+{q:"Sumpah Pemuda terjadi tahun?",a:["1926","1927","1928","1929"],c:2},
+{q:"Kerajaan Hindu tertua di Indonesia?",a:["Kutai","Majapahit","Sriwijaya","Demak"],c:0},
+{q:"Tokoh perumus Pancasila?",a:["Soedirman","Soekarno","Hatta","Kartini"],c:1},
+{q:"VOC didirikan tahun?",a:["1596","1602","1619","1620"],c:1},
+{q:"Perang Diponegoro terjadi di?",a:["Sumatra","Jawa","Kalimantan","Sulawesi"],c:1},
+{q:"PPKI dibentuk oleh?",a:["Belanda","Jepang","VOC","Inggris"],c:1},
+{q:"Majapahit jaya saat?",a:["Gajah Mada","Hayam Wuruk","Ken Arok","Airlangga"],c:1},
+{q:"BPUPKI dibentuk tahun?",a:["1942","1943","1944","1945"],c:1},
+{q:"Isi Sumpah Pemuda?",a:["Satu bangsa","Satu tanah air","Satu bahasa","Semua benar"],c:3},
+
+// ===== TEKNOLOGI =====
+{q:"HTML singkatan dari?",a:["Hyper Text Markup Language","High Tech ML","Hyper Tool","Hyperlink Text"],c:0},
+{q:"CSS berfungsi untuk?",a:["Logika","Tampilan","Database","Server"],c:1},
+{q:"Bahasa interaktif web?",a:["HTML","CSS","JavaScript","PHP"],c:2},
+{q:"Perangkat keras disebut?",a:["Software","Hardware","Brainware","Firmware"],c:1},
+{q:"Sistem operasi?",a:["Chrome","Windows","Google","Intel"],c:1},
+{q:"RAM berfungsi sebagai?",a:["Penyimpanan sementara","Permanen","CPU","Input"],c:0},
+{q:"Browser digunakan untuk?",a:["Main game","Jelajah web","Edit foto","Server"],c:1},
+{q:"Ekstensi CSS?",a:[".css",".js",".html",".exe"],c:0},
+{q:"File utama website?",a:["home.html","index.html","start.html","main.html"],c:1},
+{q:"GitHub digunakan untuk?",a:["Desain","Hosting kode","Edit video","Chat"],c:1},
+
+// ===== OLAHRAGA =====
+{q:"Jumlah pemain sepak bola?",a:["9","10","11","12"],c:2},
+{q:"Induk sepak bola dunia?",a:["AFC","PSSI","FIFA","UEFA"],c:2},
+{q:"Jumlah pemain basket?",a:["4","5","6","7"],c:1},
+{q:"Olimpiade diadakan tiap?",a:["2","3","4","5"],c:2},
+{q:"Renang gaya dada disebut?",a:["Bebas","Katak","Punggung","Kupu"],c:1},
+{q:"Maraton sejauh?",a:["21 km","30 km","42 km","50 km"],c:2},
+{q:"Induk bulu tangkis dunia?",a:["PBSI","BWF","FIFA","IOC"],c:1},
+{q:"Lapangan bulu tangkis?",a:["Lingkaran","Persegi panjang","Oval","Segitiga"],c:1},
+{q:"Wasit sepak bola membawa kartu?",a:["Hijau","Merah & kuning","Putih","Biru"],c:1},
+{q:"Pencak silat berasal dari?",a:["Jepang","Indonesia","China","India"],c:1},
+
+// ===== ISLAM =====
+{q:"Rukun Islam berjumlah?",a:["4","5","6","7"],c:1},
+{q:"Kitab suci Islam?",a:["Injil","Taurat","Zabur","Al-Qur'an"],c:3},
+{q:"Nabi terakhir?",a:["Isa","Musa","Muhammad","Nuh"],c:2},
+{q:"Sholat wajib sehari?",a:["3","4","5","6"],c:2},
+{q:"Puasa wajib bulan?",a:["Syawal","Ramadhan","Rajab","Muharram"],c:1},
+{q:"Kiblat umat Islam?",a:["Madinah","Ka'bah","Aqsa","Nabawi"],c:1},
+{q:"Zakat fitrah dibayar saat?",a:["Ramadhan","Idul Fitri","Idul Adha","Awal tahun"],c:1},
+{q:"Hari raya umat Islam?",a:["Natal","Waisak","Idul Fitri","Nyepi"],c:2},
+{q:"Sholat Subuh rakaat?",a:["2","3","4","5"],c:0},
+{q:"Isra Mi'raj terjadi pada Nabi?",a:["Isa","Musa","Muhammad","Nuh"],c:2}
+];
+
+while(quiz.length<50){
+ quiz.push({...quiz[Math.floor(Math.random()*quiz.length)]});
+}
+quiz.sort(()=>Math.random()-0.5);
+
+let index=0,score=0,time=15,timer,nama="";
+const timeEl=timeSpan=time=document.getElementById("time");
+
+function startQuiz(){
+ nama=username.value.trim();
+ if(!nama)return alert("Isi nama dulu");
+ startPage.style.display="none";
+ quizPage.style.display="block";
+ welcome.innerText="Halo, "+nama;
+ loadQuestion();
+}
+
+function loadQuestion(){
+ clearInterval(timer);
+ time=15;
+ timeEl.innerText=time;
+ counter.innerText=`Soal ${index+1} / ${quiz.length}`;
+ percent.innerText=Math.round(index/quiz.length*100)+"%";
+ progressBar.style.width=(index/quiz.length*100)+"%";
+ question.innerText=quiz[index].q;
+ options.innerHTML="";
+ nextBtn.disabled=true;
+
+ quiz[index].a.forEach((o,i)=>{
+  options.innerHTML+=`<div class="option" onclick="selectAnswer(this,${i})">${o}</div>`;
+ });
+
+ timer=setInterval(()=>{
+  time--;
+  timeEl.innerText=time;
+  if(time<=5)timeEl.classList.add("danger");
+  if(time===0){clearInterval(timer);nextBtn.disabled=false;}
+ },1000);
+}
+
+function selectAnswer(el,i){
+ clearInterval(timer);
+ nextBtn.disabled=false;
+ document.querySelectorAll(".option").forEach(o=>o.onclick=null);
+ if(i===quiz[index].c){el.classList.add("correct");score++}
+ else{
+  el.classList.add("wrong");
+  document.querySelectorAll(".option")[quiz[index].c].classList.add("correct");
+ }
+ scoreEl.innerText="Skor: "+score;
+}
+
+function grade(){
+ let p=score/quiz.length*100;
+ if(p>=85)return"A";
+ if(p>=70)return"B";
+ if(p>=55)return"C";
+ if(p>=40)return"D";
+ return"E";
+}
+
+function nextQuestion(){
+ index++;
+ if(index<quiz.length)loadQuestion();
+ else{
+  quizPage.innerHTML=`
+  <h2>Quiz Selesai 🎉</h2>
+  <p class="score">Nama: <b>${nama}</b></p>
+  <p class="score">Skor: <b>${score}/${quiz.length}</b></p>
+  <p class="score">Nilai: <b>${grade()}</b></p>
+  <button onclick="location.reload()">Main Lagi</button>`;
+ }
+}
+</script>
+
+</body>
+</html>
