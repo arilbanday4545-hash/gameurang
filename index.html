@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Hanari Quiz - Master Final Plus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --glass: rgba(255, 255, 255, 0.25);
+        --correct: #2ecc71;
+        --wrong: #e74c3c;
+      }
+      * {
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        background-color: #2112f3;
+      }
+
+      .bg-layer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("img/bg.jpg") no-repeat center center;
+        background-size: contain;
+        z-index: -1;
+      }
+      @media (max-width: 768px) {
+        .bg-layer {
+          background-size: cover;
+        }
+      }
+
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 20px;
+      }
+      .screen {
+        display: none;
+        width: 100%;
+        max-width: 420px;
+        background: var(--glass);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        padding: 25px;
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        text-align: center;
+        color: white;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      }
+      .active {
+        display: block;
+        animation: zoomIn 0.4s ease;
+      }
+
+      .welcome-text {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+        animation: heartbeat 1.5s infinite;
+      }
+      @keyframes heartbeat {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      /* ANIMASI KARAKTER */
+      .char-box {
+        height: 150px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        perspective: 1000px;
+      }
+      /* EFEK MELAYANG AKTIF & TERUS MENERUS */
+      .q-char {
+        max-height: 100%;
+        filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.4));
+        /* Kita buat gerakannya lebih cepat dan dinamis */
+        animation: floatFull 3s infinite ease-in-out;
+        transform-origin: bottom center;
+      }
+
+      @keyframes floatFull {
+        0% {
+          transform: translateY(0px) rotate(-3deg);
+        }
+        25% {
+          transform: translateY(-15px) rotate(0deg);
+        }
+        50% {
+          transform: translateY(0px) rotate(3deg);
+        }
+        75% {
+          transform: translateY(-10px) rotate(0deg);
+        }
+        100% {
+          transform: translateY(0px) rotate(-3deg);
+        }
+      }
+
+      /* EFEK POP SAAT MUNCUL TETAP ADA */
+      .char-pop {
+        animation: charPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), floatFull 3s infinite 0.5s ease-in-out; /* Mulai melayang setelah pop selesai */
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: none;
+        margin-bottom: 10px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+      .btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        width: 100%;
+        margin: 8px 0;
+        font-weight: 800;
+        font-size: 1rem;
+        box-shadow: 0 5px 0 #4834d4;
+      }
+      .btn:active {
+        transform: translateY(3px);
+        box-shadow: none;
+      }
+      .opt-btn {
+        background: white;
+        color: #333;
+        border: none;
+        padding: 12px;
+        border-radius: 15px;
+        width: 100%;
+        margin: 6px 0;
+        text-align: left;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .correct {
+        background: var(--correct) !important;
+        color: white;
+        transition: 0.3s;
+      }
+      .wrong {
+        background: var(--wrong) !important;
+        color: white;
+        transition: 0.3s;
+      }
+
+      table {
+        width: 100%;
+        margin-top: 15px;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        padding: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+      }
+      footer {
+        position: fixed;
+        bottom: 10px;
+        width: 100%;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.65rem;
+        font-weight: 600;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-layer"></div>
+    <div class="wrapper">
+      <div id="scr-start" class="screen active">
+        <h1 class="welcome-text">HANARI</h1>
+        <p style="font-weight: 600; margin-bottom: 20px">Quiz Pendidikan SMA</p>
+        <button class="btn" onclick="nav('scr-theme')">MULAI GAME</button>
+      </div>
+
+      <div id="scr-theme" class="screen">
+        <h3>PILIH TEMA</h3>
+        <div id="theme-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"></div>
+      </div>
+
+      <div id="scr-user" class="screen">
+        <h3>DATA PEMAIN</h3>
+        <input type="text" id="username" placeholder="Nama Kamu" />
+        <select id="userclass">
+          <option value="1 SMA">Kelas 1 SMA</option>
+          <option value="2 SMA">Kelas 2 SMA</option>
+          <option value="3 SMA">Kelas 3 SMA</option>
+        </select>
+        <button class="btn" onclick="startGame()">KONFIRMASI</button>
+      </div>
+
+      <div id="scr-game" class="screen">
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px"><span id="q-count"></span><span id="q-score"></span></div>
+        <div class="char-box"><img id="current-char" src="" class="q-char" /></div>
+        <div id="q-text" style="font-weight: 600; margin-bottom: 15px; min-height: 50px; font-size: 1.1rem"></div>
+        <div id="opt-container"></div>
+      </div>
+
+      <div id="scr-res" class="screen">
+        <h2>HASIL AKHIR</h2>
+        <h1 id="f-score" style="font-size: 4rem; color: #f1c40f; margin: 0">0</h1>
+        <div id="f-grade" style="font-weight: 800; font-size: 1.2rem; margin-bottom: 15px">GRADE: -</div>
+        <div id="lb-container"></div>
+        <button class="btn" onclick="location.reload()" style="margin-top: 15px">MAIN LAGI</button>
+      </div>
+    </div>
+
+    <footer>&copy; 2025 HANARI QUIZ | MADE BY <b>Muhamad Najril</b></footer>
+
+    <script>
+      const db = {
+        agama: [
+          { q: "Kitab suci Nabi Daud AS?", a: ["Zabur", "Taurat", "Injil", "Al-Quran"], c: "Zabur" },
+          { q: "Malaikat peniup sangkakala?", a: ["Jibril", "Israfil", "Mikail", "Izrail"], c: "Israfil" },
+          { q: "Sifat fathanah artinya?", a: ["Cerdas", "Jujur", "Benar", "Dipercaya"], c: "Cerdas" },
+          { q: "Surat pertama dalam Al-Quran?", a: ["Al-Fatihah", "Al-Baqarah", "Al-Ikhlas", "An-Nas"], c: "Al-Fatihah" },
+          { q: "Nabi terakhir umat Islam?", a: ["Muhammad SAW", "Musa AS", "Isa AS", "Ibrahim AS"], c: "Muhammad SAW" },
+          { q: "Shalat sunnah 2 rakaat pagi hari?", a: ["Dhuha", "Tahajud", "Witir", "Hajat"], c: "Dhuha" },
+          { q: "Rukun Iman ada berapa?", a: ["6", "5", "4", "7"], c: "6" },
+          { q: "Malaikat penyampai Wahyu?", a: ["Jibril", "Mikail", "Ridwan", "Malik"], c: "Jibril" },
+          { q: "Zakat fitrah dibayar saat bulan?", a: ["Ramadhan", "Syawal", "Rajab", "Muharram"], c: "Ramadhan" },
+          { q: "Nabi yang dibelah laut merah?", a: ["Musa", "Nuh", "Luth", "Adam"], c: "Musa" },
+          { q: "Tempat ibadah umat Islam?", a: ["Masjid", "Gereja", "Pura", "Vihara"], c: "Masjid" },
+          { q: "Nabi yang membangun Kapal Besar?", a: ["Nuh", "Idris", "Hud", "Saleh"], c: "Nuh" },
+          { q: "Hukum shalat 5 waktu?", a: ["Wajib", "Sunnah", "Mubah", "Makruh"], c: "Wajib" },
+          { q: "Malaikat penjaga neraka?", a: ["Malik", "Ridwan", "Atid", "Raqib"], c: "Malik" },
+          { q: "Jumlah rakaat shalat Subuh?", a: ["2", "3", "4", "1"], c: "2" },
+          { q: "Nabi yang bisa bicara dengan jin?", a: ["Sulaiman", "Daud", "Isa", "Yahya"], c: "Sulaiman" },
+          { q: "Al-Amin adalah gelar nabi?", a: ["Muhammad", "Ibrahim", "Yusuf", "Yunus"], c: "Muhammad" },
+          { q: "Ibu Kota Islam pertama?", a: ["Madinah", "Makkah", "Kairo", "Istanbul"], c: "Madinah" },
+          { q: "Malaikat pembagi rezeki?", a: ["Mikail", "Jibril", "Izrail", "Israil"], c: "Mikail" },
+          { q: "Puasa wajib dilakukan di bulan?", a: ["Ramadhan", "Sya'ban", "Dzulhijjah", "Safar"], c: "Ramadhan" },
+        ],
+        sejarah: [
+          { q: "Tahun Indonesia Merdeka?", a: ["1945", "1942", "1950", "1944"], c: "1945" },
+          { q: "Penemu Benua Amerika?", a: ["C. Columbus", "Magelhaens", "Vasco da Gama", "Marco Polo"], c: "C. Columbus" },
+          { q: "Pencetus Tanam Paksa?", a: ["Van den Bosch", "Daendels", "Raffles", "Janssens"], c: "Van den Bosch" },
+          { q: "Ibu kota Majapahit?", a: ["Trowulan", "Kediri", "Malang", "Singasari"], c: "Trowulan" },
+          { q: "Kerajaan Islam pertama?", a: ["Samudera Pasai", "Demak", "Aceh", "Banten"], c: "Samudera Pasai" },
+          { q: "BPUPKI dibentuk tanggal?", a: ["1 Maret 1945", "1 Juni 1945", "17 Agustus 1945", "2 Mei 1945"], c: "1 Maret 1945" },
+          { q: "Sumpah Pemuda tahun?", a: ["1928", "1908", "1945", "1920"], c: "1928" },
+          { q: "Pahlawan Nasional dari Aceh?", a: ["Cut Nyak Dhien", "Kartini", "Diponegoro", "Hasanuddin"], c: "Cut Nyak Dhien" },
+          { q: "Peristiwa Rengasdengklok?", a: ["16 Agustus", "17 Agustus", "18 Agustus", "15 Agustus"], c: "16 Agustus" },
+          { q: "VOC berdiri tahun?", a: ["1602", "1596", "1799", "1800"], c: "1602" },
+          { q: "Lagu Indonesia Raya diciptakan?", a: ["WR Supratman", "Ibu Sud", "Kusbini", "Bagong"], c: "WR Supratman" },
+          { q: "Bapak Pendidikan Indonesia?", a: ["Ki Hajar Dewantara", "Ahmad Dahlan", "Kartini", "Hatta"], c: "Ki Hajar Dewantara" },
+          { q: "Kota yang dibom atom pertama?", a: ["Hiroshima", "Nagasaki", "Tokyo", "Osaka"], c: "Hiroshima" },
+          { q: "Presiden RI ke-2?", a: ["Soeharto", "B.J Habibie", "Gus Dur", "Megawati"], c: "Soeharto" },
+          { q: "Kerajaan Budha terbesar?", a: ["Sriwijaya", "Majapahit", "Kutai", "Mataram"], c: "Sriwijaya" },
+          { q: "Sultan Hasanuddin dari?", a: ["Makassar", "Aceh", "Maluku", "Banten"], c: "Makassar" },
+          { q: "Organisasi Budi Utomo lahir?", a: ["20 Mei 1908", "2 Mei 1908", "1 Juni 1945", "28 Okt 1928"], c: "20 Mei 1908" },
+          { q: "Negara penjajah terlama di RI?", a: ["Belanda", "Jepang", "Inggris", "Portugis"], c: "Belanda" },
+          { q: "Nama asli Pangeran Diponegoro?", a: ["Mustahar", "Antasari", "Bonjol", "Nuku"], c: "Mustahar" },
+          { q: "Ibu kota pertama RI?", a: ["Jakarta", "Yogyakarta", "Bukittinggi", "Bandung"], c: "Jakarta" },
+        ],
+        ipa: [
+          { q: "Pusat Tata Surya?", a: ["Matahari", "Bumi", "Jupiter", "Bulan"], c: "Matahari" },
+          { q: "Planet Merah?", a: ["Mars", "Venus", "Uranus", "Merkurius"], c: "Mars" },
+          { q: "Satuan suhu SI?", a: ["Kelvin", "Celsius", "Reamur", "Fahrenheit"], c: "Kelvin" },
+          { q: "Alat pernapasan manusia?", a: ["Paru-paru", "Insang", "Trakea", "Kulit"], c: "Paru-paru" },
+          { q: "Zat hijau daun?", a: ["Klorofil", "Stomata", "Melanin", "Selulosa"], c: "Klorofil" },
+          { q: "Logam cair suhu ruang?", a: ["Raksa", "Emas", "Besi", "Perak"], c: "Raksa" },
+          { q: "Hambatan listrik?", a: ["Ohm", "Volt", "Ampere", "Watt"], c: "Ohm" },
+          { q: "Tulang belakang disebut?", a: ["Vertebrae", "Femur", "Radius", "Ulna"], c: "Vertebrae" },
+          { q: "Gas fotosintesis?", a: ["CO2", "O2", "N2", "H2"], c: "CO2" },
+          { q: "Vitamin kesehatan mata?", a: ["A", "B", "C", "D"], c: "A" },
+          { q: "Planet terbesar?", a: ["Jupiter", "Saturnus", "Bumi", "Neptunus"], c: "Jupiter" },
+          { q: "Proses air menguap?", a: ["Evaporasi", "Kondensasi", "Presipitasi", "Infiltrasi"], c: "Evaporasi" },
+          { q: "Gaya tarik bumi?", a: ["Gravitasi", "Magnet", "Pegas", "Mesin"], c: "Gravitasi" },
+          { q: "Hewan 2 alam?", a: ["Amfibi", "Reptil", "Mamalia", "Aves"], c: "Amfibi" },
+          { q: "Satuan daya?", a: ["Watt", "Joule", "Newton", "Volt"], c: "Watt" },
+          { q: "Simbol air?", a: ["H2O", "CO2", "O2", "NaCl"], c: "H2O" },
+          { q: "Alat ukur gempa?", a: ["Seismograf", "Barometer", "Anemometer", "Termometer"], c: "Seismograf" },
+          { q: "Cahaya merambat?", a: ["Lurus", "Belok", "Melingkar", "Diam"], c: "Lurus" },
+          { q: "Perubahan es ke cair?", a: ["Mencair", "Membeku", "Menguap", "Menyublim"], c: "Mencair" },
+          { q: "Bumi berputar pada poros?", a: ["Rotasi", "Revolusi", "Evolusi", "Mutasi"], c: "Rotasi" },
+        ],
+        ips: [
+          { q: "Benua terluas?", a: ["Asia", "Afrika", "Amerika", "Eropa"], c: "Asia" },
+          { q: "Mata uang Jepang?", a: ["Yen", "Won", "Dollar", "Rupee"], c: "Yen" },
+          { q: "Garis 0 derajat khayal?", a: ["Khatulistiwa", "Bujur", "Lintang", "Zonasi"], c: "Khatulistiwa" },
+          { q: "Gunung tertinggi dunia?", a: ["Everest", "Fuji", "Rinjani", "Semeru"], c: "Everest" },
+          { q: "Negara Gajah Putih?", a: ["Thailand", "Vietnam", "Laos", "Filipina"], c: "Thailand" },
+          { q: "Ibu kota Jawa Tengah?", a: ["Semarang", "Solo", "Bandung", "Jogja"], c: "Semarang" },
+          { q: "Samudra terluas?", a: ["Pasifik", "Hindia", "Atlantik", "Arktik"], c: "Pasifik" },
+          { q: "Penemu Lampu?", a: ["Thomas Edison", "Einstein", "Tesla", "Newton"], c: "Thomas Edison" },
+          { q: "Benua terkecil?", a: ["Australia", "Eropa", "Afrika", "Antartika"], c: "Australia" },
+          { q: "Mata uang Inggris?", a: ["Poundsterling", "Euro", "Dollar", "Franc"], c: "Poundsterling" },
+          { q: "Negara Sakura?", a: ["Jepang", "Korea", "Cina", "Taiwan"], c: "Jepang" },
+          { q: "Ibu kota Australia?", a: ["Canberra", "Sydney", "Melbourne", "Perth"], c: "Canberra" },
+          { q: "Sungai terpanjang dunia?", a: ["Nil", "Amazon", "Mekong", "Kapuas"], c: "Nil" },
+          { q: "ASEAN berdiri di?", a: ["Bangkok", "Jakarta", "Manila", "Singapura"], c: "Bangkok" },
+          { q: "Negara penduduk terbanyak?", a: ["India", "Cina", "Amerika", "Indonesia"], c: "India" },
+          { q: "Ibu kota AS?", a: ["Washington DC", "New York", "LA", "Chicago"], c: "Washington DC" },
+          { q: "Selat Jawa-Sumatera?", a: ["Sunda", "Madura", "Bali", "Malaka"], c: "Sunda" },
+          { q: "Gunung tertinggi di RI?", a: ["Jayawijaya", "Semeru", "Kerinci", "Rinjani"], c: "Jayawijaya" },
+          { q: "Mata uang Malaysia?", a: ["Ringgit", "Rupiah", "Peso", "Baht"], c: "Ringgit" },
+          { q: "Negara Menara Eiffel?", a: ["Prancis", "Italia", "Jerman", "Inggris"], c: "Prancis" },
+        ],
+      };
+
+      let sessionSoal = [],
+        qIdx = 0,
+        score = 0,
+        userN = "",
+        userC = "",
+        curT = "";
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      function nav(id) {
+        document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+      }
+
+      function playSound(type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (type === "correct") {
+          osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        } else {
+          osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+        }
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+        osc.stop(audioCtx.currentTime + 0.3);
+      }
+
+      const grid = document.getElementById("theme-grid");
+      Object.keys(db).forEach((t) => {
+        const b = document.createElement("button");
+        b.className = "btn";
+        b.innerText = t.toUpperCase();
+        b.onclick = () => {
+          curT = t;
+          sessionSoal = [...db[t]].sort(() => Math.random() - 0.5).slice(0, 20);
+          nav("scr-user");
+        };
+        grid.appendChild(b);
+      });
+
+      function startGame() {
+        userN = document.getElementById("username").value || "Pemain";
+        userC = document.getElementById("userclass").value;
+        nav("scr-game");
+        loadQ();
+      }
+
+      function loadQ() {
+        const d = sessionSoal[qIdx];
+        document.getElementById("q-count").innerText = `Soal ${qIdx + 1}/${sessionSoal.length}`;
+        document.getElementById("q-score").innerText = `Skor: ${score}`;
+
+        // Animasi Pop Karakter
+        const charImg = document.getElementById("current-char");
+        charImg.src = "img/cr" + (Math.floor(Math.random() * 3) + 1) + ".png";
+        charImg.classList.remove("char-pop");
+        void charImg.offsetWidth;
+        charImg.classList.add("char-pop");
+
+        document.getElementById("q-text").innerText = d.q;
+        const cont = document.getElementById("opt-container");
+        cont.innerHTML = "";
+        d.a.forEach((o) => {
+          const b = document.createElement("button");
+          b.className = "opt-btn";
+          b.innerText = o;
+          b.onclick = () => {
+            document.querySelectorAll(".opt-btn").forEach((btn) => (btn.style.pointerEvents = "none"));
+            if (o === d.c) {
+              b.classList.add("correct");
+              score += 5;
+              playSound("correct");
+            } else {
+              b.classList.add("wrong");
+              playSound("wrong");
+              document.querySelectorAll(".opt-btn").forEach((btn) => {
+                if (btn.innerText === d.c) btn.classList.add("correct");
+              });
+            }
+            setTimeout(() => {
+              qIdx++;
+              qIdx < sessionSoal.length ? loadQ() : finish();
+            }, 1000);
+          };
+          cont.appendChild(b);
+        });
+      }
+
+      function finish() {
+        nav("scr-res");
+        document.getElementById("f-score").innerText = score;
+        const grade = score >= 90 ? "A" : score >= 70 ? "B" : score >= 50 ? "C" : "D";
+        document.getElementById("f-grade").innerText = "GRADE: " + grade;
+        let lb = JSON.parse(localStorage.getItem("hanari_final_anim") || "[]");
+        lb.push({ n: userN, c: userC, s: score, t: curT.toUpperCase() });
+        lb.sort((a, b) => b.s - a.s);
+        lb = lb.slice(0, 5);
+        localStorage.setItem("hanari_final_anim", JSON.stringify(lb));
+        let h = "<table><tr><th>Nama</th><th>Kelas</th><th>Skor</th></tr>";
+        lb.forEach((r) => (h += `<tr><td>${r.n}</td><td>${r.c}</td><td>${r.s}</td></tr>`));
+        document.getElementById("lb-container").innerHTML = h + "</table>";
+      }
+    </script>
+  </body>
+</html>
