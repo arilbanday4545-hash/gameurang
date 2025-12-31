@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hanari Cosmic Quiz Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #9d50bb;
+            --accent: #00ff88;
+            --bg-dark: #050608;
+            --danger: #ff4757;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-dark);
+            height: 100vh; width: 100vw;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; color: white;
+        }
+
+        .space-bg {
+            position: fixed; top: 0; left: 0; width: 200%; height: 200%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            z-index: -1; animation: moveStars 150s linear infinite; opacity: 0.5;
+        }
+        @keyframes moveStars { from { transform: translate(0, 0); } to { transform: translate(-50%, -50%); } }
+
+        .quiz-container {
+            width: 92%; max-width: 420px; height: 90vh; max-height: 720px;
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
+            border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+            position: relative; padding: 25px; overflow: hidden;
+        }
+
+        .screen { display: none; flex-direction: column; align-items: center; height: 100%; width: 100%; }
+        .active { display: flex; animation: fadeIn 0.4s ease forwards; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        .char-wrap {
+            height: 120px; width: 120px; margin: 10px 0;
+            display: flex; justify-content: center; align-items: center;
+            filter: drop-shadow(0 0 15px var(--primary)); animation: bounce 3s infinite ease-in-out;
+        }
+        .char-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; margin: 15px 0; letter-spacing: 3px; }
+        h1 span { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+
+        .btn-action {
+            width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; font-family: 'Orbitron', sans-serif; font-size: 0.85rem;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-action:active { transform: scale(0.95); }
+
+        .question-card {
+            background: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 18px;
+            margin-bottom: 15px; width: 100%; font-size: 0.95rem; line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.1); max-height: 180px; overflow-y: auto; text-align: left;
+        }
+
+        .options-list { width: 100%; flex-grow: 1; overflow-y: auto; }
+        .opt-item {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 18px; margin-bottom: 10px; border-radius: 15px;
+            cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; transition: 0.2s;
+        }
+
+        input, select {
+            width: 100%; padding: 15px; background: #1a1a1a;
+            border: 2px solid var(--primary); border-radius: 15px;
+            color: white; margin-bottom: 15px; font-size: 1rem;
+        }
+
+        .hud { display: flex; justify-content: space-between; width: 100%; font-family: 'Orbitron', sans-serif; font-size: 0.7rem; color: var(--accent); margin-bottom: 10px; }
+        .back-btn { align-self: flex-start; color: var(--primary); font-size: 0.8rem; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
+
+        .lead-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; }
+        .lead-table th { border-bottom: 2px solid var(--primary); padding: 10px; text-align: left; color: var(--primary); font-family: 'Orbitron'; }
+        .lead-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .grade-badge { padding: 4px 8px; border-radius: 5px; font-weight: bold; font-family: 'Orbitron'; }
+        .grade-a { background: var(--accent); color: black; }
+        .grade-b { background: var(--primary); color: white; }
+        .grade-c { background: orange; color: white; }
+        .grade-d { background: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="space-bg"></div>
+
+    <div class="quiz-container">
+        <div id="scr-start" class="screen active">
+            <h1 style="margin-top: 50px;">HANARI<span>COSMOS</span></h1>
+            <div class="char-wrap"><img src="img/c1.png" alt="char"></div>
+            <button class="btn-action" onclick="initAudio(); nav('scr-user')">MULAI MISI</button>
+            <button class="btn-action" style="background: transparent; border: 1px solid var(--primary);" onclick="showLeads()">PERINGKAT</button>
+        </div>
+
+        <div id="scr-user" class="screen">
+            <div class="back-btn" onclick="nav('scr-start')">◀ KEMBALI</div>
+            <h2 style="font-family: 'Orbitron';">IDENTITAS</h2>
+            <input type="text" id="username" placeholder="Nama Pilot...">
+            <select id="userclass">
+                <option value="" disabled selected>-- Pilih Kelas --</option>
+                <option value="10">Kelas 10</option>
+                <option value="11">Kelas 11</option>
+                <option value="12">Kelas 12</option>
+            </select>
+            <button class="btn-action" onclick="saveUser()">LANJUT</button>
+        </div>
+
+        <div id="scr-theme" class="screen">
+            <div class="back-btn" onclick="nav('scr-user')">◀ KEMBALI</div>
+            <h2 style="font-family: 'Orbitron';">MATERI</h2>
+            <div id="theme-grid" style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+        </div>
+
+        <div id="scr-game" class="screen">
+            <div class="hud">
+                <span id="q-idx">WAVE: 01/15</span>
+                <span id="q-score" style="color:var(--primary)">BENAR: 0</span>
+            </div>
+            <div class="char-wrap" style="height: 80px; width: 80px;">
+                <img id="game-char" src="img/c1.png" alt="char">
+            </div>
+            <div id="q-text" class="question-card"></div>
+            <div id="opt-container" class="options-list"></div>
+        </div>
+
+        <div id="scr-leads" class="screen">
+            <div class="back-btn" onclick="nav('scr-start')">◀ KEMBALI</div>
+            <h2 style="font-family: 'Orbitron'; font-size: 1.1rem;">TOP PILOTS</h2>
+            <div style="width:100%; overflow-y:auto; flex-grow:1;">
+                <table class="lead-table" id="table-body"></table>
+            </div>
+            <button class="btn-action" style="background: rgba(255, 71, 87, 0.2); border: 1px solid var(--danger); color: var(--danger); margin-top: 10px; font-size: 0.7rem;" onclick="clearLeads()">HAPUS SEMUA RIWAYAT</button>
+        </div>
+
+        <div id="scr-res" class="screen">
+            <h2 style="margin-top: 40px; font-family: 'Orbitron';">HASIL AKHIR</h2>
+            <div id="res-grade" style="font-size: 6rem; font-family: 'Orbitron'; text-shadow: 0 0 20px var(--primary);">A</div>
+            <div id="res-detail" style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px;">Benar: 15/15</div>
+            <button class="btn-action" onclick="location.reload()">RE-IGNITE</button>
+        </div>
+    </div>
+
+    <script>
+        // Database Lengkap
+        const db = {
+            agama: {
+                "10": [
+                    {q: "Sifat Al-Karim menunjukkan bahwa Allah Maha Mulia. Bagaimana penerapan paling tepat bagi seorang pelajar?", a: ["Memaafkan kesalahan teman dan tidak dendam", "Hanya berteman dengan yang kaya saja", "Memberikan bantuan hanya jika dipuji", "Menonjolkan kelebihan diri di depan teman"], c: "Memaafkan kesalahan teman dan tidak dendam"},
+                    {q: "Malaikat Rakib dan Atid senantiasa mengawasi manusia. Apa hikmah terbesar dari iman kepada mereka?", a: ["Mendorong diri untuk jujur meski tidak ada guru", "Agar merasa takut secara berlebihan setiap saat", "Hanya berbuat baik saat berada di tempat ibadah", "Mencari perhatian orang lain melalui perbuatan baik"], c: "Mendorong diri untuk jujur meski tidak ada guru"},
+                    {q: "Zakat fitrah merupakan kewajiban bagi setiap muslim. Apa tujuan utama dari zakat ini bagi sosial?", a: ["Menyucikan jiwa dan membantu fakir miskin", "Menunjukkan bahwa umat Islam adalah kelompok kaya", "Sebagai formalitas rutin tahunan saja", "Agar mendapatkan pujian dari pengurus masjid"], c: "Menyucikan jiwa dan membantu fakir miskin"},
+                    {q: "Al-Quran disebut juga Al-Huda. Mengapa Al-Quran krusial sebagai pedoman zaman modern?", a: ["Berisi petunjuk moral dan hukum yang tetap relevan", "Hanya sebagai bacaan untuk mendapatkan pahala", "Karena bahasanya yang sangat sulit ditiru", "Berisi ramalan-ramalan tentang masa depan"], c: "Berisi petunjuk moral dan hukum yang tetap relevan"},
+                    {q: "Sifat Tabligh bagi Rasulullah SAW berarti menyampaikan. Bagaimana meneladani sifat ini?", a: ["Berani menyampaikan kebenaran meski sulit", "Menyebarkan informasi tanpa mengecek faktanya", "Memberitahukan jawaban ujian kepada teman", "Menyimpan ilmu pengetahuan hanya untuk diri sendiri"], c: "Berani menyampaikan kebenaran meski sulit"},
+                    {q: "Birrul Walidain adalah kewajiban. Mengapa ridha Allah dikaitkan dengan ridha orang tua?", a: ["Karena orang tua adalah wasilah kehadiran kita", "Agar orang tua selalu menuruti keinginan kita", "Supaya harta warisan jatuh ke tangan kita", "Karena itu adalah aturan adat kuno"], c: "Karena orang tua adalah wasilah kehadiran kita"},
+                    {q: "Shalat diibaratkan sebagai tiang agama. Apa dampaknya jika tiang tersebut sering ditinggalkan?", a: ["Keimanan menjadi rapuh dan mudah terpengaruh", "Kehidupan tetap stabil asal sering sedekah", "Hanya akan merasa bersalah sebentar saja", "Status agamanya tetap kuat di mata warga"], c: "Keimanan menjadi rapuh dan mudah terpengaruh"},
+                    {q: "Kejujuran adalah pondasi karakter Rasulullah. Apa dampak jangka panjang memelihara kejujuran?", a: ["Mendapatkan kepercayaan penuh dari guru dan teman", "Hanya akan dimanfaatkan oleh orang tidak jujur", "Proses belajar menjadi lebih lama dan melelahkan", "Tidak akan pernah memiliki musuh sama sekali"], c: "Mendapatkan kepercayaan penuh dari guru dan teman"},
+                    {q: "Malaikat Mikail bertugas mengatur rezeki. Apa bentuk syukur yang tepat atas tugas malaikat ini?", a: ["Menjaga kelestarian alam dan hemat air", "Berdoa agar hujan hanya turun di rumah kita", "Menganggap rezeki hasil kerja keras kita semata", "Boros dalam menggunakan sumber daya alam"], c: "Menjaga kelestarian alam dan hemat air"},
+                    {q: "Menuntut ilmu hukumnya wajib. Mengapa Islam memberikan kedudukan tinggi bagi orang berilmu?", a: ["Ilmu adalah sarana mengenal Pencipta dan Alam", "Agar orang Islam bisa menguasai semua harta bumi", "Supaya bisa berdebat dan menang melawan orang", "Karena dengan ilmu kita tidak perlu bekerja"], c: "Ilmu adalah sarana mengenal Pencipta dan Alam"},
+                    {q: "Allah mustahil bersifat Al-Maut (Mati). Apa keyakinan yang muncul dari sifat Baqa'?", a: ["Bersandar sepenuhnya hanya kepada Allah", "Mengabaikan kematian karena Allah abadi", "Merasa bebas melakukan apa saja karena Allah kekal", "Hanya beribadah saat merasa ajal mendekat"], c: "Bersandar sepenuhnya hanya kepada Allah"},
+                    {q: "Puasa Ramadhan melatih pengendalian diri. Apa manfaat psikologis yang paling terasa?", a: ["Kecerdasan emosional dan kesabaran lebih kuat", "Perasaan bangga karena berhasil menahan lapar", "Keinginan makan berlebihan saat Idul Fitri", "Hanya merasa lemas dan tidak bertenaga"], c: "Kecerdasan emosional dan kesabaran lebih kuat"},
+                    {q: "Kitab Zabur diturunkan kepada Nabi Daud AS. Apa fokus utama dari isi kitab tersebut?", a: ["Kumpulan doa, zikir, nasihat dan pujian", "Hukum-hukum perang yang sangat mendetail", "Tata cara membangun kerajaan yang besar", "Cerita tentang nabi yang akan datang"], c: "Kumpulan doa, zikir, nasihat dan pujian"},
+                    {q: "Sifat Tawadhu adalah lawan sombong. Mengapa siswa pintar harus tetap Tawadhu?", a: ["Agar ilmunya berkah dan tidak tertutup sombong", "Supaya teman-teman merasa kasihan pada kita", "Karena itu syarat untuk mendapatkan nilai bagus", "Agar guru tidak memberi soal yang sulit"], c: "Agar ilmunya berkah dan tidak tertutup sombong"},
+                    {q: "Surah Al-Ma'un memperingatkan tentang pendusta agama. Siapa kriteria utamanya?", a: ["Orang yang shalatnya lalai dan menghardik yatim", "Orang yang belum sanggup naik haji ke Mekah", "Orang yang tidak memiliki hafalan Al-Quran", "Orang yang bekerja keras mencari harta"], c: "Orang yang shalatnya lalai dan menghardik yatim"}
+                ],
+                "11": [
+                    {q: "Dalam shalat jenazah, setelah takbir kedua, apa yang harus dibaca?", a: ["Shalawat kepada Nabi Muhammad SAW", "Membaca Surah Al-Fatihah", "Mendoakan jenazah agar diampuni", "Membaca doa untuk keluarga jenazah"], c: "Shalawat kepada Nabi Muhammad SAW"},
+                    {q: "Berapa kadar zakat mal untuk simpanan emas yang sudah mencapai nisab?", a: ["2.5 persen", "5 persen", "10 persen", "25 persen"], c: "2.5 persen"},
+                    {q: "Masa iddah bagi istri yang suaminya meninggal dunia adalah selama...", a: ["4 bulan 10 hari", "3 bulan 10 hari", "40 hari penuh", "100 hari"], c: "4 bulan 10 hari"},
+                    {q: "Tokoh pembaru Islam asal Mesir pencetus Pan-Islamisme adalah...", a: ["Jamaluddin al-Afghani", "Muhammad Abduh", "Rasyid Rida", "Sultan Mahmud II"], c: "Jamaluddin al-Afghani"},
+                    {q: "Prinsip utama asuransi syariah adalah...", a: ["Tolong menolong (Ta'awun)", "Mencari keuntungan pribadi", "Saling menguasai aset", "Perjudian nasib"], c: "Tolong menolong (Ta'awun)"},
+                    {q: "Dalam waris Islam, bagian anak laki-laki dibanding anak perempuan adalah...", a: ["2 banding 1", "1 banding 1", "3 banding 1", "Sama saja"], c: "2 banding 1"},
+                    {q: "Haji yang melakukan Umrah terlebih dahulu baru Haji disebut...", a: ["Haji Tamattu'", "Haji Ifrad", "Haji Qiran", "Haji Mabrur"], c: "Haji Tamattu'"},
+                    {q: "Apa hukum asal pernikahan bagi mereka yang sudah mampu?", a: ["Sunnah", "Wajib", "Mubah", "Makruh"], c: "Sunnah"},
+                    {q: "Apa posisi makmum saat khatib sedang berkhutbah Jumat?", a: ["Diam dan mendengarkan", "Boleh bicara pelan", "Boleh membaca Quran keras", "Boleh bermain smartphone"], c: "Diam dan mendengarkan"},
+                    {q: "Siapa yang paling berhak menjadi wali nikah bagi wanita?", a: ["Ayah kandung", "Saudara laki-laki", "Paman", "Ketua Lingkungan"], c: "Ayah kandung"},
+                    {q: "Penyembelihan hewan pada hari ke-7 kelahiran bayi disebut...", a: ["Aqiqah", "Qurban", "Walimah", "Syukuran"], c: "Aqiqah"},
+                    {q: "Apa yang dimaksud mualaf dalam kategori penerima zakat?", a: ["Orang baru masuk Islam", "Orang terlilit hutang", "Orang sedang safar", "Petugas zakat"], c: "Orang baru masuk Islam"},
+                    {q: "Ilmuwan kedokteran terkenal masa Abbasiyah adalah...", a: ["Ibnu Sina", "Al-Khawarizmi", "Al-Biruni", "Ibnu Rushd"], c: "Ibnu Sina"},
+                    {q: "Sikap tawazun berarti menjaga keseimbangan antara...", a: ["Dunia dan Akhirat", "Wajib dan Sunnah", "Makan dan Minum", "Teman dan Keluarga"], c: "Dunia dan Akhirat"},
+                    {q: "Sebutan bagi orang yang mengeluarkan zakat adalah...", a: ["Muzakki", "Mustahik", "Munfiq", "Mualaf"], c: "Muzakki"}
+                ],
+                "12": [
+                    {q: "Apa yang dimaksud dengan Yaumul Mizan dalam iman hari akhir?", a: ["Hari penimbangan amal", "Hari kebangkitan", "Hari pengumpulan", "Hari pembalasan"], c: "Hari penimbangan amal"},
+                    {q: "Apa fungsi utama alam barzakh bagi manusia?", a: ["Tempat penantian hingga kiamat", "Tempat perbaikan diri", "Tempat reinkarnasi", "Tempat pengampunan dosa"], c: "Tempat penantian hingga kiamat"},
+                    {q: "Manakah contoh takdir Muallaq yang bisa diubah dengan ikhtiar?", a: ["Kepandaian melalui belajar", "Jenis kelamin lahir", "Waktu kiamat", "Kematian seseorang"], c: "Kepandaian melalui belajar"},
+                    {q: "Mengapa dakwah Wali Songo sangat efektif di tanah Jawa?", a: ["Menggunakan akulturasi budaya", "Menggunakan kekerasan fisik", "Memberikan uang pada rakyat", "Menggunakan bahasa Arab saja"], c: "Menggunakan akulturasi budaya"},
+                    {q: "Jalur masuknya Islam ke Indonesia yang paling dominan adalah...", a: ["Perdagangan", "Peperangan", "Penjajahan", "Wisata"], c: "Perdagangan"},
+                    {q: "Sikap Ihsan dalam ujian sekolah tercermin melalui...", a: ["Tidak menyontek walau tak ada pengawas", "Berdoa terus tanpa belajar", "Merasa lebih hebat beribadah", "Hanya peduli nilai tinggi"], c: "Tidak menyontek walau tak ada pengawas"},
+                    {q: "Apa tujuan utama hukum waris (Faraid) dalam Islam?", a: ["Mencegah sengketa keluarga", "Mengumpulkan harta pada satu orang", "Menghukum anak perempuan", "Syarat jenazah diterima"], c: "Mencegah sengketa keluarga"},
+                    {q: "Sunan Giri berdakwah melalui permainan anak agar...", a: ["Menanamkan nilai Islam sejak dini", "Anak-anak lupa belajar", "Hiburan semata", "Mencari pengikut baru"], c: "Menanamkan nilai Islam sejak dini"},
+                    {q: "Cara menjaga sikap Qana'ah di tengah gaya hidup mewah adalah...", a: ["Selalu bersyukur atas apa yang ada", "Bekerja tanpa henti demi harta", "Menjauhi pergaulan total", "Berhutang demi gaya hidup"], c: "Selalu bersyukur atas apa yang ada"},
+                    {q: "Siapa malaikat yang bertugas meniup sangkakala?", a: ["Israfil", "Izrail", "Jibril", "Mikail"], c: "Israfil"},
+                    {q: "Peninggalan Islam yang terkenal di Andalusia Spanyol adalah...", a: ["Masjid Cordoba", "Taj Mahal", "Piramida", "Al-Azhar"], c: "Masjid Cordoba"},
+                    {q: "Zakat pertanian yang diairi irigasi berbayar adalah sebesar...", a: ["5 persen", "10 persen", "2.5 persen", "20 persen"], c: "5 persen"},
+                    {q: "Kapan seorang muslim harus menunjukkan sifat Syaja'ah (Berani)?", a: ["Membela kebenaran", "Ditantang berkelahi", "Menunjukkan otot", "Saat berbohong"], c: "Membela kebenaran"},
+                    {q: "Kitab Al-Qanun fi al-Tibb karya Ibnu Sina membahas tentang...", a: ["Kedokteran", "Astronomi", "Matematika", "Fisika"], c: "Kedokteran"},
+                    {q: "Mengapa syirik disebut kezaliman yang besar oleh Luqman?", a: ["Menyekutukan Allah adalah pengkhianatan", "Membuat orang menjadi miskin", "Tidak punya teman di dunia", "Aturan zaman dulu saja"], c: "Menyekutukan Allah adalah pengkhianatan"}
+                ]
+            },
+            sejarah: {
+                "10": [
+                    {q: "Siapa manusia purba yang dijuluki 'Manusia Besar dari Jawa'?", a: ["Meganthropus Paleojavanicus", "Pithecanthropus Erectus", "Homo Soloensis", "Homo Sapiens"], c: "Meganthropus Paleojavanicus"},
+                    {q: "Meja batu tempat sesaji pada zaman Megalitikum disebut...", a: ["Dolmen", "Menhir", "Sarkofagus", "Punden Berundak"], c: "Dolmen"},
+                    {q: "Apa perbedaan Nomaden dan Sedenter?", a: ["Nomaden pindah, sedenter menetap", "Nomaden menetap, sedenter berburu", "Nomaden bertani, sedenter berkelana", "Sama saja"], c: "Nomaden pindah, sedenter menetap"},
+                    {q: "Penemu Pithecanthropus Erectus di Trinil adalah...", a: ["Eugene Dubois", "Von Koenigswald", "Ter Haar", "Oppenoorth"], c: "Eugene Dubois"},
+                    {q: "Candi Borobudur dibangun oleh Dinasti...", a: ["Syailendra", "Sanjaya", "Isyana", "Girindra"], c: "Syailendra"},
+                    {q: "Prasasti Ciaruteun berasal dari kerajaan...", a: ["Tarumanegara", "Kutai", "Majapahit", "Sriwijaya"], c: "Tarumanegara"},
+                    {q: "Siapa yang mengucapkan Sumpah Palapa?", a: ["Gajah Mada", "Hayam Wuruk", "Raden Wijaya", "Kertanegara"], c: "Gajah Mada"},
+                    {q: "Pengarang kitab Sutasoma adalah...", a: ["Mpu Tantular", "Mpu Prapanca", "Mpu Sedah", "Mpu Panuluh"], c: "Mpu Tantular"},
+                    {q: "Pusat Kerajaan Sriwijaya berada di...", a: ["Palembang", "Riau", "Lampung", "Medan"], c: "Palembang"},
+                    {q: "Bukti tertua kerajaan Hindu (Kutai) adalah...", a: ["Yupa", "Prasasti Kebun Kopi", "Candi Prambanan", "Arca Budha"], c: "Yupa"},
+                    {q: "Faktor alam perpindahan Mataram ke Jawa Timur adalah...", a: ["Letusan Merapi", "Tsunami", "Banjir", "Gempa Bumi"], c: "Letusan Merapi"},
+                    {q: "Kerajaan Hindu terakhir di Nusantara adalah...", a: ["Majapahit", "Singasari", "Kediri", "Pajajaran"], c: "Majapahit"},
+                    {q: "Pendiri Majapahit adalah...", a: ["Raden Wijaya", "Jayanegara", "Hayam Wuruk", "Gajah Mada"], c: "Raden Wijaya"},
+                    {q: "Zaman Perundagian dicirikan oleh alat dari...", a: ["Logam", "Batu", "Tulang", "Kayu"], c: "Logam"},
+                    {q: "Fungsi Menhir adalah...", a: ["Pemujaan roh nenek moyang", "Tempat mayat", "Meja makan", "Batas wilayah"], c: "Pemujaan roh nenek moyang"}
+                ],
+                "11": [
+                    {q: "Organisasi pergerakan nasional pertama adalah...", a: ["Budi Utomo", "Sarekat Islam", "Indische Partij", "PNI"], c: "Budi Utomo"},
+                    {q: "Pencetus Tanam Paksa (Cultuurstelsel) adalah...", a: ["Van den Bosch", "Daendels", "Raffles", "Speelman"], c: "Van den Bosch"},
+                    {q: "Inti poin ketiga Sumpah Pemuda adalah...", a: ["Bahasa Persatuan Indonesia", "Satu Tanah Air", "Satu Bangsa", "Lagu Indonesia Raya"], c: "Bahasa Persatuan Indonesia"},
+                    {q: "Pemicu Perang Diponegoro adalah...", a: ["Patok jalan di makam leluhur", "Pajak tinggi", "Perebutan tahta", "Larangan ibadah"], c: "Patok jalan di makam leluhur"},
+                    {q: "Tujuan Daendels membangun jalan Anyer-Panarukan adalah...", a: ["Pertahanan militer", "Transportasi warga", "Jalur dagang", "Wisata"], c: "Pertahanan militer"},
+                    {q: "Proklamasi dirumuskan di rumah...", a: ["Laksamana Maeda", "Terauchi", "Soekarno", "Moh Hatta"], c: "Laksamana Maeda"},
+                    {q: "Rengasdengklok terjadi karena perbedaan pendapat tentang...", a: ["Waktu Proklamasi", "Isi teks", "Penanda tangan", "Lokasi"], c: "Waktu Proklamasi"},
+                    {q: "Kerja paksa zaman Jepang disebut...", a: ["Romusha", "Rodi", "Tanam Paksa", "PETA"], c: "Romusha"},
+                    {q: "Organisasi militer bentukan Jepang untuk bela tanah air...", a: ["PETA", "Heiho", "Keibodan", "Seinendan"], c: "PETA"},
+                    {q: "Pengetik teks proklamasi adalah...", a: ["Sayuti Melik", "Sukarni", "BM Diah", "Wikana"], c: "Sayuti Melik"},
+                    {q: "Pahlawan dari Maluku melawan Belanda di Benteng Duurstede...", a: ["Pattimura", "Antasari", "Hasanuddin", "Imam Bonjol"], c: "Pattimura"},
+                    {q: "Tiga program Politik Etis adalah...", a: ["Irigasi, Emigrasi, Edukasi", "Irigasi, Produksi, Industri", "Edukasi, Urbanisasi, Koperasi", "Kesehatan, Pangan, Papan"], c: "Irigasi, Emigrasi, Edukasi"},
+                    {q: "Tokoh Tiga Serangkai Indische Partij adalah...", a: ["Douwes Dekker, Cipto, Ki Hajar", "Soekarno, Hatta, Sjahrir", "Wahidin, Sutomo, Gunawan", "Agus Salim, Hos, Hamka"], c: "Douwes Dekker, Cipto, Ki Hajar"},
+                    {q: "Apa kepanjangan BPUPKI?", a: ["Badan Penyelidik Usaha-usaha Persiapan Kemerdekaan Indonesia", "Badan Penyelenggara Urusan Persiapan Kemerdekaan Indonesia", "Barisan Pemuda Untuk Persiapan Kemerdekaan Indonesia", "Badan Pemantau Untuk Proklamasi Kemerdekaan Indonesia"], c: "Badan Penyelidik Usaha-usaha Persiapan Kemerdekaan Indonesia"},
+                    {q: "Belanda menyerah pada Jepang di...", a: ["Kalijati", "Linggarjati", "Renville", "Roem-Royen"], c: "Kalijati"}
+                ],
+                "12": [
+                    {q: "Negara pertama yang mengakui kemerdekaan RI adalah...", a: ["Mesir", "India", "Australia", "Amerika"], c: "Mesir"},
+                    {q: "Hasil KMB adalah Belanda menyerahkan kedaulatan kepada...", a: ["RIS", "NKRI", "PBB", "Jepang"], c: "RIS"},
+                    {q: "Awal Orde Baru ditandai dengan...", a: ["Supersemar", "Dekrit Presiden", "Proklamasi", "Reformasi"], c: "Supersemar"},
+                    {q: "Alasan Indonesia keluar PBB tahun 1965...", a: ["Konfrontasi Malaysia", "Masalah Irian", "Krisis ekonomi", "Tekanan AS"], c: "Konfrontasi Malaysia"},
+                    {q: "Tuntutan utama Reformasi 1998 adalah...", a: ["Hapus KKN", "Turunkan BBM", "Ganti Presiden", "Keluar ASEAN"], c: "Hapus KKN"},
+                    {q: "KAA di Bandung menghasilkan...", a: ["Dasasila Bandung", "Piagam Jakarta", "Resolusi PBB", "Pakta Warsawa"], c: "Dasasila Bandung"},
+                    {q: "Panglima Mandala pembebasan Irian Barat adalah...", a: ["Soeharto", "Ahmad Yani", "Sudirman", "Yos Sudarso"], c: "Soeharto"},
+                    {q: "Mata uang pertama RI tahun 1946...", a: ["ORI", "Rupiah", "Gulden", "Yen"], c: "ORI"},
+                    {q: "Tokoh Indonesia pendiri GNB adalah...", a: ["Soekarno", "Hatta", "Adam Malik", "Ali Alatas"], c: "Soekarno"},
+                    {q: "Demokrasi Terpimpin berpusat pada...", a: ["Presiden Soekarno", "DPR", "MPR", "Partai Politik"], c: "Presiden Soekarno"},
+                    {q: "Penyebab krisis 1997 adalah...", a: ["Krisis Moneter", "Gagal Panen", "Perang Dunia", "Gempa Bumi"], c: "Krisis Moneter"},
+                    {q: "Wakil Indonesia dalam Deklarasi Bangkok (ASEAN)...", a: ["Adam Malik", "Ali Sadikin", "Soeharto", "Habibie"], c: "Adam Malik"},
+                    {q: "Program pangan Orde Baru adalah...", a: ["Revolusi Hijau", "Ekonomi Benteng", "Ali-Baba", "Berdikari"], c: "Revolusi Hijau"},
+                    {q: "Timor Timur lepas tahun 1999 melalui...", a: ["Referendum", "Perang", "Perjanjian", "Hibah"], c: "Referendum"},
+                    {q: "Politik luar negeri Indonesia adalah...", a: ["Bebas Aktif", "Memihak Barat", "Memihak Timur", "Isolasi"], c: "Bebas Aktif"}
+                ]
+            },
+            ipa: {
+                "10": [
+                    {q: "Mana yang merupakan besaran pokok?", a: ["Massa, Panjang, Waktu", "Kecepatan, Gaya, Suhu", "Volume, Luas, Tekanan", "Energi, Usaha, Daya"], c: "Massa, Panjang, Waktu"},
+                    {q: "Satuan SI untuk intensitas cahaya...", a: ["Candela", "Ampere", "Mole", "Watt"], c: "Candela"},
+                    {q: "Rumus dasar kecepatan adalah...", a: ["Jarak / Waktu", "Jarak * Waktu", "Waktu / Jarak", "Gaya / Massa"], c: "Jarak / Waktu"},
+                    {q: "Warna merah planet Mars disebabkan oleh...", a: ["Oksida Besi", "Metana", "Es", "Belerang"], c: "Oksida Besi"},
+                    {q: "Perubahan materi yang menghasilkan zat baru...", a: ["Kimia", "Fisika", "Wujud", "Mekanik"], c: "Kimia"},
+                    {q: "Hukum II Newton: Gaya sebanding dengan massa dan...", a: ["Percepatan", "Kecepatan", "Waktu", "Jarak"], c: "Percepatan"},
+                    {q: "Lapisan ozon ada di...", a: ["Stratosfer", "Troposfer", "Mesosfer", "Eksosfer"], c: "Stratosfer"},
+                    {q: "Gas terbanyak di atmosfer bumi...", a: ["Nitrogen", "Oksigen", "CO2", "Argon"], c: "Nitrogen"},
+                    {q: "Energi karena gerakan disebut energi...", a: ["Kinetik", "Potensial", "Suhu", "Kimia"], c: "Kinetik"},
+                    {q: "Dua unsur atau lebih yang terikat kimia disebut...", a: ["Senyawa", "Campuran", "Unsur", "Koloid"], c: "Senyawa"},
+                    {q: "Fungsi Mitokondria adalah...", a: ["Penghasil Energi", "Pusat Sel", "Sintesis Protein", "Cadangan Makanan"], c: "Penghasil Energi"},
+                    {q: "Penguapan air laut ke atmosfer disebut...", a: ["Evaporasi", "Kondensasi", "Presipitasi", "Infiltrasi"], c: "Evaporasi"},
+                    {q: "Benda yang tak tembus cahaya disebut...", a: ["Gelap", "Bening", "Transparan", "Translusen"], c: "Gelap"},
+                    {q: "Larutan pH 7 bersifat...", a: ["Netral", "Asam", "Basa", "Kuat"], c: "Netral"},
+                    {q: "Alat ukur massa jenis zat cair...", a: ["Hidrometer", "Termometer", "Barometer", "Anemometer"], c: "Hidrometer"}
+                ],
+                "11": [
+                    {q: "Sel darah yang melawan kuman adalah...", a: ["Sel Darah Putih", "Sel Darah Merah", "Trombosit", "Plasma"], c: "Sel Darah Putih"},
+                    {q: "Pertukaran gas oksigen terjadi di...", a: ["Alveolus", "Bronkus", "Trakea", "Faring"], c: "Alveolus"},
+                    {q: "Asam Lambung (HCl) berfungsi untuk...", a: ["Membunuh kuman", "Cerna lemak", "Cerna amilum", "Serap nutrisi"], c: "Membunuh kuman"},
+                    {q: "Kekurangan Insulin menyebabkan...", a: ["Gula darah naik", "Tekanan darah turun", "Lemak naik", "Pertumbuhan berhenti"], c: "Gula darah naik"},
+                    {q: "Saraf pusat terdiri dari...", a: ["Otak & Sumsum", "Otak & Saraf Tepi", "Motorik & Sensorik", "Jantung & Paru"], c: "Otak & Sumsum"},
+                    {q: "Sendi bahu (segala arah) disebut...", a: ["Sendi Peluru", "Sendi Engsel", "Sendi Pelana", "Sendi Putar"], c: "Sendi Peluru"},
+                    {q: "Klorofil berfungsi untuk...", a: ["Serap cahaya matahari", "Simpan air", "Tarik serangga", "Kuatkan batang"], c: "Serap cahaya matahari"},
+                    {q: "Pembuluh Arteri mengalirkan darah...", a: ["Keluar Jantung", "Ke Jantung", "Sangat lambat", "Merah Gelap"], c: "Keluar Jantung"},
+                    {q: "Penyaringan darah terjadi di...", a: ["Ginjal", "Hati", "Kantung Kemih", "Ureter"], c: "Ginjal"},
+                    {q: "Tempat fotosintesis adalah...", a: ["Kloroplas", "Vakuola", "Nukleus", "Dinding Sel"], c: "Kloroplas"},
+                    {q: "Simbiosis saling menguntungkan disebut...", a: ["Mutualisme", "Parasitisme", "Komensalisme", "Predasi"], c: "Mutualisme"},
+                    {q: "Bagian telinga penjaga tekanan udara...", a: ["Eustachius", "Gendang", "Rumah Siput", "Saraf"], c: "Eustachius"},
+                    {q: "Vitamin larut lemak adalah...", a: ["A, D, E, K", "B & C", "Semua", "Hanya C"], c: "A, D, E, K"},
+                    {q: "Bagian mata pengatur cahaya...", a: ["Iris & Pupil", "Retina", "Lensa", "Kornea"], c: "Iris & Pupil"},
+                    {q: "Lapisan pelindung batang dikotil...", a: ["Epidermis", "Xilem", "Floem", "Kambium"], c: "Epidermis"}
+                ],
+                "12": [
+                    {q: "Pasangan gen pada lokus yang sama disebut...", a: ["Alel", "Genotipe", "Fenotipe", "Kromosom"], c: "Alel"},
+                    {q: "Pembelahan Mitosis bertujuan untuk...", a: ["Pertumbuhan", "Sel kelamin", "Setengah kromosom", "Kloning"], c: "Pertumbuhan"},
+                    {q: "Empat basa nitrogen DNA adalah...", a: ["A, T, G, S", "A, U, G, S", "T, U, G, S", "A, B, C, D"], c: "A, T, G, S"},
+                    {q: "Pencetus teori evolusi seleksi alam...", a: ["Charles Darwin", "Lamarck", "Mendel", "Pasteur"], c: "Charles Darwin"},
+                    {q: "Produk fermentasi L. bulgaricus adalah...", a: ["Yoghurt", "Tempe", "Roti", "Kecap"], c: "Yoghurt"},
+                    {q: "Organisme hasil rekayasa genetika disebut...", a: ["Transgenik", "Hibrida", "Mutan", "Kloning"], c: "Transgenik"},
+                    {q: "Perubahan tiba-tiba struktur DNA disebut...", a: ["Mutasi", "Seleksi", "Adaptasi", "Evolusi"], c: "Mutasi"},
+                    {q: "Enzim adalah biokatalisator, artinya...", a: ["Percepat reaksi", "Hasilkan panas", "Bahan sel", "Hanya di lambung"], c: "Percepat reaksi"},
+                    {q: "Teori Big Bang menjelaskan...", a: ["Asal usul semesta", "Punah dinosaurus", "Bom atom", "Inti bumi"], c: "Asal usul semesta"},
+                    {q: "Sifat yang menutupi sifat lain disebut...", a: ["Dominan", "Resesif", "Intermediet", "Letal"], c: "Dominan"},
+                    {q: "Kloning domba Dolly menggunakan teknik...", a: ["Transfer nukleus", "Bayi tabung", "Inseminasi", "Fermentasi"], c: "Transfer nukleus"},
+                    {q: "Urutan Mitosis yang benar...", a: ["P, M, A, T", "M, P, T, A", "T, A, M, P", "A, T, P, M"], c: "P, M, A, T"},
+                    {q: "Penyakit darah sukar membeku...", a: ["Hemofilia", "Albino", "Buta Warna", "Anemia"], c: "Hemofilia"},
+                    {q: "Pembawa impuls keluar badan sel saraf...", a: ["Akson", "Dendrit", "Sinapsis", "Mielin"], c: "Akson"},
+                    {q: "Hormon kelamin sekunder laki-laki...", a: ["Testosteron", "Estrogen", "Progesteron", "Insulin"], c: "Testosteron"}
+                ]
+            },
+            ips: {
+                "10": [
+                    {q: "Apa itu Kelangkaan (Scarcity)?", a: ["Kebutuhan > Alat pemuas", "Barang banyak harga turun", "Keinginan sedikit", "Uang dibatasi"], c: "Kebutuhan > Alat pemuas"},
+                    {q: "Posisi Indonesia di antara dua benua disebut...", a: ["Posisi Silang", "Letak Astronomis", "Khatulistiwa", "ZEE"], c: "Posisi Silang"},
+                    {q: "Contoh kebutuhan sekunder pelajar...", a: ["Smartphone", "Nasi", "Seragam", "Rumah"], c: "Smartphone"},
+                    {q: "Garis bujur berfungsi menentukan...", a: ["Waktu", "Iklim", "Batas Negara", "Tinggi daratan"], c: "Waktu"},
+                    {q: "Kegiatan mengurangi nilai guna barang...", a: ["Konsumsi", "Produksi", "Distribusi", "Investasi"], c: "Konsumsi"},
+                    {q: "Dampak inflasi tinggi adalah...", a: ["Daya beli turun", "Masyarakat kaya", "Uang menguat", "Pengangguran hilang"], c: "Daya beli turun"},
+                    {q: "Fungsi sosialisasi keluarga adalah...", a: ["Membentuk karakter", "Mencari nafkah", "Melindungi fisik", "Membagi tugas"], c: "Membentuk karakter"},
+                    {q: "Skala 1:100.000 berarti 1 cm mewakili...", a: ["1 KM", "100 M", "10 KM", "100 KM"], c: "1 KM"},
+                    {q: "Samudra Hindia ada di sebelah...", a: ["Selatan & Barat", "Utara & Timur", "Barat & Utara", "Timur & Selatan"], c: "Selatan & Barat"},
+                    {q: "Muson Timur menyebabkan musim...", a: ["Kemarau", "Hujan", "Dingin", "Salju"], c: "Kemarau"},
+                    {q: "Syarat interaksi: Kontak & ...", a: ["Komunikasi", "Pertemuan", "Hobi sama", "Bantuan"], c: "Komunikasi"},
+                    {q: "Faktor internal perubahan sosial...", a: ["Inovasi baru", "Bencana alam", "Perang", "Budaya asing"], c: "Inovasi baru"},
+                    {q: "Norma hukum paling kuat karena...", a: ["Sanksi tegas & memaksa", "Kebiasaan lama", "Ajaran agama", "Hanya untuk elit"], c: "Sanksi tegas & memaksa"},
+                    {q: "Tenaga eksogen contohnya...", a: ["Erosi", "Gempa", "Vulkanik", "Lempeng"], c: "Erosi"},
+                    {q: "Tujuan MEA adalah aliran bebas...", a: ["Barang & Jasa ASEAN", "Produk Asing", "Pajak Tinggi", "Barang Mewah"], c: "Barang & Jasa ASEAN"}
+                ],
+                "11": [
+                    {q: "Apa itu angka kelahiran kasar (CBR)?", a: ["Lahir per 1000 penduduk", "Total lahir di RS", "Bayi hidup", "Rasio Pria Wanita"], c: "Lahir per 1000 penduduk"},
+                    {q: "Tujuan Transmigrasi adalah...", a: ["Pemerataan penduduk", "Pindah ke luar negeri", "Warga desa ke kota", "Kurangi pengangguran"], c: "Pemerataan penduduk"},
+                    {q: "Indikator IPM adalah...", a: ["Kesehatan, Edukasi, Hidup Layak", "Kekayaan & Luas", "Militer & Politik", "Ekspor Negara"], c: "Kesehatan, Edukasi, Hidup Layak"},
+                    {q: "Patembayan (Gesselschaft) bersifat...", a: ["Formal & Kontrak", "Erat & Keluarga", "Abadi", "Sementara & Berantakan"], c: "Formal & Kontrak"},
+                    {q: "Kerjasama banyak negara disebut...", a: ["Multilateral", "Bilateral", "Regional", "Privat"], c: "Multilateral"},
+                    {q: "Ciri negara kualitas penduduk tinggi...", a: ["Harapan hidup panjang", "Penduduk banyak", "Lahir tinggi", "Hutan luas"], c: "Harapan hidup panjang"},
+                    {q: "Sensus petugas datang ke rumah disebut...", a: ["Canvasser", "Householder", "Registrasi", "Sampling"], c: "Canvasser"},
+                    {q: "Dampak ledakan penduduk tanpa kerja...", a: ["Pengangguran naik", "Ekonomi rata", "Lingkungan bersih", "Harga murah"], c: "Pengangguran naik"},
+                    {q: "Peran pihak ketiga dalam mediasi...", a: ["Penengah netral", "Hakim pemutus", "Pendukung sepihak", "Provokator"], c: "Penengah netral"},
+                    {q: "Fungsi mangrove di pantai adalah...", a: ["Cegah abrasi", "Tambang pasir", "Hotel mewah", "Uapkan air laut"], c: "Cegah abrasi"},
+                    {q: "Integrasi tercapai jika...", a: ["Sepakat nilai norma", "Gaul sekelompok", "Saling jatuhkan", "Budaya luar masuk"], c: "Sepakat nilai norma"},
+                    {q: "SDA tak dapat diperbaharui...", a: ["Minyak & Batubara", "Hutan & Air", "Udara & Matahari", "Tani & Kebun"], c: "Minyak & Batubara"},
+                    {q: "Pendapatan per kapita untuk ukur...", a: ["Kemakmuran rata-rata", "Seluruh uang bank", "Orang terkaya", "Hutang negara"], c: "Kemakmuran rata-rata"},
+                    {q: "Mobilitas vertikal naik contohnya...", a: ["Karyawan jadi Direktur", "Guru pindah sekolah", "Tani ganti tanaman", "Pengusaha bangkrut"], c: "Karyawan jadi Direktur"},
+                    {q: "Masyarakat multikultural adalah...", a: ["Beda suku berdampingan", "Satu budaya kuat", "Larang perbedaan", "Selalu konflik"], c: "Beda suku berdampingan"}
+                ],
+                "12": [
+                    {q: "Pendorong utama globalisasi abad 21...", a: ["Teknologi Informasi", "Peperangan", "Energi Kutub", "Kurang penduduk"], c: "Teknologi Informasi"},
+                    {q: "Sektor dominan negara maju...", a: ["Industri & Jasa", "Tani & Kebun", "Ikan & Laut", "Hutan & Tambang"], c: "Industri & Jasa"},
+                    {q: "Contoh perilaku Westernisasi...", a: ["Tiru gaya hidup barat", "Belajar bahasa", "Pakai komputer", "Dagang ke Eropa"], c: "Tiru gaya hidup barat"},
+                    {q: "Manfaat SIG dalam pembangunan...", a: ["Data spasial digital", "Ramal gempa", "Hanya pakar", "Murah tanpa listrik"], c: "Data spasial digital"},
+                    {q: "Pembangunan berkelanjutan...", a: ["Penuhi butuh sekarang tanpa rusak masa depan", "Eksploitasi alam", "Pabrik di hutan", "Untung jangka pendek"], c: "Penuhi butuh sekarang tanpa rusak masa depan"},
+                    {q: "Karakteristik Benua Australia...", a: ["Satu benua satu negara", "Negara terbanyak", "Asli semua", "Tanpa gurun"], c: "Satu benua satu negara"},
+                    {q: "Keuntungan mata uang Euro...", a: ["Mudah transaksi", "Negara jadi kaya", "Hapus hutang", "Tutup akses luar"], c: "Mudah transaksi"},
+                    {q: "Badan PBB bidang kesehatan...", a: ["WHO", "UNICEF", "UNESCO", "ILO"], c: "WHO"},
+                    {q: "Selisih WITA ke WIB adalah...", a: ["1 Jam", "2 Jam", "3 Jam", "0 Jam"], c: "1 Jam"},
+                    {q: "Hak ZEE suatu negara sejauh...", a: ["200 mil", "12 mil", "500 mil", "Bebas"], c: "200 mil"},
+                    {q: "Kunci sukses negara Jepang...", a: ["Kualitas SDM", "Ekspansi wilayah", "Bantuan tetangga", "Hanya bertani"], c: "Kualitas SDM"},
+                    {q: "Perubahan sosial cepat & mendasar...", a: ["Revolusi", "Evolusi", "Modernisasi", "Globalisasi"], c: "Revolusi"},
+                    {q: "Bank Dunia fokus pada...", a: ["Infrastruktur & Miskin", "Senjata militer", "Gedung mewah", "Pesta olahraga"], c: "Infrastruktur & Miskin"},
+                    {q: "Penyebab Pemanasan Global...", a: ["Emisi CO2", "Pohon banyak", "Oksigen naik", "Warga kutub"], c: "Emisi CO2"},
+                    {q: "Ciri kearifan lokal...", a: ["Nilai luhur warisan", "Budaya baru", "Aturan kaku", "Gaya hidup mewah"], c: "Nilai luhur warisan"}
+                ]
+            }
+        };
+
+        let audioCtx, qIdx = 0, score = 0, uName = "", uCls = "", qList = [];
+        const chars = ["img/c1.png", "img/c2.png", "img/c3.png"];
+
+        function initAudio() { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playSfx(correct) {
+            if(!audioCtx) return;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.frequency.setValueAtTime(correct ? 1100 : 120, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            o.start(); o.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function saveUser() {
+            uName = document.getElementById('username').value.trim();
+            uCls = document.getElementById('userclass').value;
+            if(uName && uCls) { renderThemes(); nav('scr-theme'); }
+            else alert("Data Pilot harus diisi!");
+        }
+
+        function renderThemes() {
+            const grid = document.getElementById('theme-grid');
+            grid.innerHTML = "";
+            ["agama", "sejarah", "ipa", "ips"].forEach(t => {
+                const b = document.createElement('button');
+                b.className = "btn-action"; b.innerText = t.toUpperCase();
+                b.onclick = () => { qList = db[t][uCls]; qIdx = 0; score = 0; nav('scr-game'); loadQ(); };
+                grid.appendChild(b);
+            });
+        }
+
+        function loadQ() {
+            const data = qList[qIdx];
+            if(!data) { finish(); return; }
+            document.getElementById('game-char').src = chars[qIdx % 3];
+            document.getElementById('q-idx').innerText = `WAVE: ${String(qIdx+1).padStart(2,'0')}/15`;
+            document.getElementById('q-score').innerText = `BENAR: ${score}`;
+            document.getElementById('q-text').innerText = data.q;
+            const cont = document.getElementById('opt-container');
+            cont.innerHTML = "";
+            let opts = [...data.a].sort(() => Math.random() - 0.5);
+            opts.forEach(o => {
+                const d = document.createElement('div');
+                d.className = "opt-item";
+                d.innerHTML = `<span style="color:var(--primary);margin-right:10px">⬢</span> ${o}`;
+                d.onclick = () => {
+                    document.querySelectorAll('.opt-item').forEach(el => el.style.pointerEvents = "none");
+                    if(o === data.c) { score++; playSfx(true); d.style.borderColor = "var(--accent)"; d.style.background = "rgba(0,255,136,0.1)"; }
+                    else { playSfx(false); d.style.borderColor = "var(--danger)"; d.style.background = "rgba(255,71,87,0.1)"; }
+                    setTimeout(() => { qIdx++; loadQ(); }, 800);
+                };
+                cont.appendChild(d);
+            });
+        }
+
+        function getGrade(s) {
+            if(s >= 13) return 'A';
+            if(s >= 10) return 'B';
+            if(s >= 7) return 'C';
+            return 'D';
+        }
+
+        function finish() {
+            const grade = getGrade(score);
+            nav('scr-res');
+            document.getElementById('res-grade').innerText = grade;
+            document.getElementById('res-grade').className = `grade-${grade.toLowerCase()}`;
+            document.getElementById('res-detail').innerText = `Benar: ${score}/15 Soal`;
+            let ld = JSON.parse(localStorage.getItem('hanari_v2_leads') || "[]");
+            ld.push({n: uName, b: score, c: uCls, g: grade});
+            ld.sort((a,b) => b.b - a.b);
+            localStorage.setItem('hanari_v2_leads', JSON.stringify(ld.slice(0,10)));
+        }
+
+        function showLeads() {
+            nav('scr-leads');
+            const ld = JSON.parse(localStorage.getItem('hanari_v2_leads') || "[]");
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = `<tr><th>Nama</th><th>Kls</th><th>Skor</th><th>Gr</th></tr>`;
+            if(!ld.length) tbody.innerHTML += `<tr><td colspan="4" style="text-align:center; padding:15px; color:#666;">Data Kosong</td></tr>`;
+            ld.forEach(x => {
+                tbody.innerHTML += `<tr>
+                    <td>${x.n}</td>
+                    <td>${x.c}</td>
+                    <td>${x.b}/15</td>
+                    <td><span class="grade-badge grade-${x.g.toLowerCase()}">${x.g}</span></td>
+                </tr>`;
+            });
+        }
+
+        function clearLeads() {
+            if(confirm("Hapus semua riwayat peringkat?")) {
+                localStorage.removeItem('hanari_v2_leads');
+                showLeads();
+            }
+        }
+    </script>
+</body>
+</html>
