@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Hanari Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --primary: #00d2ff;
+        --secondary: #9d50bb;
+        --accent: #00ff88;
+        --danger: #ff4757;
+        --glass: rgba(255, 255, 255, 0.1);
+      }
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+        background: #050608;
+        color: white;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .stars-container {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      }
+      .star {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: moveStar linear infinite;
+      }
+      @keyframes moveStar {
+        from {
+          transform: translateY(-100vh);
+        }
+        to {
+          transform: translateY(100vh);
+        }
+      }
+
+      .card {
+        width: 95%;
+        max-width: 440px;
+        background: var(--glass);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-radius: 35px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+        z-index: 10;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .screen {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+      .active {
+        display: flex;
+        animation: fadeInUp 0.5s ease-out forwards;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .header-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      .viz-container {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 20px;
+        cursor: pointer;
+        padding: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+      }
+      .bar {
+        width: 3px;
+        background: var(--accent);
+        height: 5px;
+        transition: 0.3s;
+      }
+      .animating {
+        animation: bounce 0.5s infinite alternate;
+      }
+      @keyframes bounce {
+        from {
+          height: 4px;
+        }
+        to {
+          height: 16px;
+        }
+      }
+
+      .img-hero {
+        width: 90px;
+        filter: drop-shadow(0 0 20px var(--primary));
+        animation: float 3s ease-in-out infinite;
+        margin-bottom: 15px;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-15px);
+        }
+      }
+
+      h1 {
+        font-family: "Orbitron", sans-serif;
+        color: var(--primary);
+        font-size: 1.1rem;
+        margin: 0;
+        text-shadow: 0 0 10px var(--primary);
+      }
+      .welcome-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin: 15px 0;
+        line-height: 1.6;
+        background: linear-gradient(45deg, #00d2ff, #00ff88, #9d50bb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .btn {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+        padding: 14px;
+        color: white;
+        border-radius: 12px;
+        font-family: "Orbitron", sans-serif;
+        font-weight: bold;
+        width: 100%;
+        margin: 6px 0;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+      .btn-back {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ccc;
+      }
+      .btn-danger {
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        font-size: 0.7rem;
+        margin-top: 10px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 14px;
+        margin: 8px 0;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        outline: none;
+      }
+      #q-text {
+        text-align: left;
+        font-size: 0.9rem;
+        min-height: 90px;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        margin-bottom: 15px;
+      }
+      .opt {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 14px;
+        margin: 8px 0;
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: left;
+        font-size: 0.85rem;
+        transition: 0.2s;
+      }
+      .correct {
+        background: var(--accent) !important;
+        color: #000;
+        font-weight: bold;
+      }
+      .wrong {
+        background: var(--danger) !important;
+        color: #fff;
+      }
+
+      .table-wrap {
+        width: 100%;
+        max-height: 250px;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        margin: 15px 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.65rem;
+      }
+      th {
+        color: var(--primary);
+        padding: 12px 5px;
+        border-bottom: 1px solid var(--primary);
+        font-family: "Orbitron";
+      }
+      td {
+        padding: 10px 5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center;
+      }
+      .grade-pill {
+        padding: 2px 6px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 0.7rem;
+      }
+      .grade-A {
+        background: var(--accent);
+        color: black;
+      }
+      .grade-B {
+        background: var(--primary);
+        color: white;
+      }
+      .grade-C {
+        background: #f1c40f;
+        color: black;
+      }
+      .grade-D {
+        background: var(--danger);
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stars-container" id="starField"></div>
+    <audio id="bgm" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+    <div class="card">
+      <div class="header-box">
+        <h1>HANARI QUIZE GAME</h1>
+        <div class="viz-container" id="musicBtn" onclick="toggleMusic()">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      </div>
+
+      <div id="scr-welcome" class="screen active">
+        <img src="img/carakter.png" class="img-hero" />
+        <p class="welcome-text">Selamat Datang digame hanari! Ayo Uji Pengetahuan Kamu disini.</p>
+        <button class="btn" onclick="startApp()">AYO MULAI</button>
+      </div>
+
+      <div id="scr-id" class="screen">
+        <h1>ISI DATA</h1>
+        <input type="text" id="p-name" placeholder="Nama Pilot..." />
+        <select id="p-class">
+          <option value="" disabled selected>Pilih Kelas</option>
+          <option value="10">Kelas 10 SMA</option>
+          <option value="11">Kelas 11 SMA</option>
+          <option value="12">Kelas 12 SMA</option>
+        </select>
+        <button class="btn" onclick="goMateri()">KONFIRMASI</button>
+        <button class="btn btn-back" style="color: var(--primary)" onclick="nav('scr-lead')">🏆 RANKING</button>
+      </div>
+
+      <div id="scr-materi" class="screen">
+        <h1 id="grade-label"></h1>
+        <button class="btn" onclick="startQuiz('AGAMA')">🌙 AGAMA</button>
+        <button class="btn" onclick="startQuiz('IPA')">🧪 IPA / SAINS</button>
+        <button class="btn" onclick="startQuiz('IPS')">🌍 IPS / SOSIAL</button>
+        <button class="btn" onclick="startQuiz('SEJARAH')">📜 SEJARAH</button>
+        <button class="btn btn-back" onclick="nav('scr-id')">KEMBALI</button>
+      </div>
+
+      <div id="scr-game" class="screen">
+        <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.7rem; color: var(--accent); margin-bottom: 10px"><span id="disp-n"></span> <span id="disp-s">Benar: 0</span></div>
+        <div id="q-text"></div>
+        <div id="opt-box" style="width: 100%"></div>
+      </div>
+
+      <div id="scr-lead" class="screen">
+        <h1>RANKING PESERTA</h1>
+        <div class="table-wrap">
+          <table id="l-table"></table>
+        </div>
+        <button class="btn" onclick="nav('scr-id')">MISI BARU</button>
+        <button class="btn btn-back" onclick="nav('scr-welcome')">MENU UTAMA</button>
+        <button class="btn btn-danger" onclick="clearData()">🗑️ RESET DATA</button>
+      </div>
+    </div>
+
+    <script>
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      function playSfx(f, t, d) {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.type = t;
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+        o.start();
+        o.stop(audioCtx.currentTime + d);
+      }
+
+      const bgm = document.getElementById("bgm");
+      const bars = document.querySelectorAll(".bar");
+
+      function toggleMusic() {
+        if (bgm.paused) {
+          bgm.play();
+          bars.forEach((b) => b.classList.add("animating"));
+        } else {
+          bgm.pause();
+          bars.forEach((b) => b.classList.remove("animating"));
+        }
+      }
+
+      function startApp() {
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        bgm.play().catch(() => {});
+        bars.forEach((b) => b.classList.add("animating"));
+        nav("scr-id");
+      }
+
+      // ==========================================
+      // BANK SOAL TERPISAH PER TEMA & KELAS
+      // ==========================================
+      const questDB = {
+        10: {
+          AGAMA: [
+            {
+              q: "Dalam hukum tajwid, apabila Alif Lam bertemu dengan huruf Syamsiyah seperti Sin atau Shad, maka suaranya harus dileburkan ke huruf berikutnya tanpa membunyikan L. Hukum ini adalah...",
+              a: ["Alif Lam Syamsiyah", "Alif Lam Qomariyah", "Idgham", "Iqlab"],
+              c: "Alif Lam Syamsiyah",
+            },
+            { q: "Sebagai makhluk gaib yang diciptakan Allah dari nur (cahaya) dan tidak memiliki hawa nafsu sehingga selalu taat, mempercayai keberadaan Malaikat merupakan rukun iman ke...", a: ["1", "2", "3", "4"], c: "2" },
+            { q: "Setiap Rasul dibekali dengan keistimewaan luar biasa di luar nalar manusia untuk membuktikan kenabiannya atas izin Allah. Fenomena ini disebut dengan...", a: ["Mukjizat", "Karamah", "Maunah", "Sihir"], c: "Mukjizat" },
+            { q: "Surah dalam Al-Quran yang dikenal sebagai 'Ummul Kitab' atau induk dari Al-Quran dan wajib dibaca dalam setiap rakaat shalat adalah surah...", a: ["Al-Ikhlas", "Al-Baqarah", "Al-Fatihah", "An-Nas"], c: "Al-Fatihah" },
+            { q: "Allah memiliki sifat 'Wujud' yang artinya Ada. Lawan dari sifat wujud yang berarti tidak mungkin Allah itu tidak ada atau binasa adalah...", a: ["Adam", "Maut", "Fana", "Jahlun"], c: "Adam" },
+            { q: "Perilaku jujur dalam perkataan maupun perbuatan merupakan pondasi akhlak mulia. Dalam bahasa Arab, sifat jujur atau benar ini dikenal dengan istilah...", a: ["Sidiq", "Amanah", "Tabligh", "Fathonah"], c: "Sidiq" },
+            { q: "Kitab suci yang diturunkan kepada Nabi Isa AS sebagai petunjuk bagi kaum Bani Israil pada masa itu adalah kitab...", a: ["Taurat", "Zabur", "Injil", "Al-Quran"], c: "Injil" },
+            { q: "Sikap menghormati dan menghargai perbedaan keyakinan atau pendapat orang lain dalam kehidupan bermasyarakat disebut dengan...", a: ["Tawadhu", "Tasamuh", "Ta'awun", "Tafakur"], c: "Tasamuh" },
+            {
+              q: "Shalat yang dikerjakan secara bersama-sama oleh dua orang atau lebih, di mana salah satunya menjadi imam, memiliki keutamaan 27 derajat dibandingkan shalat...",
+              a: ["Sendiri (Munfarid)", "Jumat", "Jenazah", "Gerhana"],
+              c: "Sendiri (Munfarid)",
+            },
+            { q: "Zakat yang wajib dikeluarkan setiap jiwa Muslim pada bulan Ramadhan hingga sebelum shalat Idul Fitri untuk mensucikan diri disebut zakat...", a: ["Mal", "Fitrah", "Profesi", "An'am"], c: "Fitrah" },
+            { q: "Nabi terakhir yang diutus Allah sebagai rahmat bagi semesta alam (Rahmatan lil 'Alamin) dan penutup para Nabi adalah...", a: ["Nabi Ibrahim", "Nabi Musa", "Nabi Isa", "Nabi Muhammad SAW"], c: "Nabi Muhammad SAW" },
+            { q: "Sifat wajib bagi Rasul yang artinya cerdas atau memiliki intelektualitas tinggi dalam menyampaikan wahyu Allah adalah...", a: ["Amanah", "Sidiq", "Fathonah", "Tabligh"], c: "Fathonah" },
+            { q: "Air yang suci namun tidak dapat digunakan untuk bersuci karena telah digunakan untuk membasuh anggota wudu disebut dengan air...", a: ["Mutanajis", "Mustakmal", "Musyammas", "Mutlak"], c: "Mustakmal" },
+            { q: "Rukun Islam yang mewajibkan umat Muslim pergi ke Baitullah di Mekah bagi yang memiliki kemampuan secara fisik maupun finansial adalah rukun ke...", a: ["2", "3", "4", "5"], c: "5" },
+            {
+              q: "Keyakinan bahwa segala sesuatu yang terjadi di alam semesta, baik baik maupun buruk, telah ditetapkan oleh Allah sejak zaman azali disebut...",
+              a: ["Qada dan Qadar", "Ikhtiar", "Tawakal", "Istiqomah"],
+              c: "Qada dan Qadar",
+            },
+          ],
+          IPA: [
+            { q: "Planet yang dikenal sebagai planet merah karena permukaan oksida besinya dan merupakan planet keempat dari matahari dalam sistem tata surya kita adalah...", a: ["Venus", "Mars", "Jupiter", "Saturnus"], c: "Mars" },
+            {
+              q: "Zat yang berfungsi memberikan warna hijau pada daun dan berperan krusial dalam proses fotosintesis untuk mengubah energi cahaya menjadi energi kimia adalah...",
+              a: ["Stomata", "Klorofil", "Hemoglobin", "Melanin"],
+              c: "Klorofil",
+            },
+            { q: "Dalam tabel periodik kimia, unsur yang memiliki lambang 'O' dan sangat dibutuhkan oleh makhluk hidup untuk proses respirasi atau pernapasan adalah...", a: ["Emas", "Oksigen", "Perak", "Besi"], c: "Oksigen" },
+            { q: "Satuan internasional yang digunakan untuk menyatakan besarnya gaya yang bekerja pada suatu benda sesuai hukum fisika adalah...", a: ["Joule", "Watt", "Newton", "Pascal"], c: "Newton" },
+            { q: "Makhluk hidup yang mampu membuat makanannya sendiri melalui proses fotosintesis, seperti tumbuhan hijau, dalam ekosistem disebut sebagai...", a: ["Konsumen", "Produsen", "Pengurai", "Predator"], c: "Produsen" },
+            { q: "Perubahan wujud benda dari fase gas menjadi fase cair, seperti yang terjadi pada embun di pagi hari, disebut dengan proses...", a: ["Mencair", "Menguap", "Mengembun", "Menyublim"], c: "Mengembun" },
+            { q: "Lapisan udara yang menyelimuti bumi dan berfungsi melindungi bumi dari radiasi sinar ultraviolet matahari yang berbahaya disebut...", a: ["Litosfer", "Hidrosfer", "Atmosfer", "Biosfer"], c: "Atmosfer" },
+            { q: "Energi yang dimiliki oleh suatu benda karena pengaruh kedudukannya atau ketinggiannya dari permukaan tanah disebut energi...", a: ["Kinetik", "Potensial", "Mekanik", "Listrik"], c: "Potensial" },
+            { q: "Bagian terkecil dari suatu materi yang tidak dapat dibagi lagi dengan reaksi kimia biasa dan terdiri dari proton, neutron, serta elektron disebut...", a: ["Molekul", "Unsur", "Atom", "Senyawa"], c: "Atom" },
+            { q: "Alat yang digunakan untuk mengukur suhu suatu benda atau ruangan dengan satuan derajat Celcius atau Fahrenheit adalah...", a: ["Barometer", "Termometer", "Hygrometer", "Altimeter"], c: "Termometer" },
+            { q: "Gaya tarik menarik yang terjadi antara semua partikel yang mempunyai massa di alam semesta, termasuk bumi terhadap benda di atasnya, adalah...", a: ["Magnet", "Gesek", "Gravitasi", "Pegas"], c: "Gravitasi" },
+            { q: "Gas yang dihasilkan dari proses pernapasan manusia dan digunakan oleh tumbuhan untuk melakukan fotosintesis adalah...", a: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Hidrogen"], c: "Karbon Dioksida" },
+            { q: "Proses perpindahan panas melalui zat perantara tanpa disertai perpindahan partikel zat tersebut, seperti panas pada ujung sendok logam, disebut...", a: ["Konduksi", "Konveksi", "Radiasi", "Induksi"], c: "Konduksi" },
+            { q: "Cermin yang memiliki permukaan melengkung ke dalam dan bersifat mengumpulkan sinar (konvergen) disebut cermin...", a: ["Datar", "Cembung", "Cekung", "Ganda"], c: "Cekung" },
+            { q: "Hubungan timbal balik antara makhluk hidup dengan lingkungannya dalam suatu kesatuan fungsional disebut dengan...", a: ["Populasi", "Komunitas", "Ekosistem", "Habitat"], c: "Ekosistem" },
+          ],
+          IPS: [
+            { q: "Benua yang memiliki wilayah paling luas di dunia dan mencakup negara-negara besar seperti Rusia, Cina, hingga Indonesia adalah benua...", a: ["Amerika", "Afrika", "Asia", "Eropa"], c: "Asia" },
+            { q: "Garis khayal yang membagi bumi menjadi dua bagian secara horizontal, yakni belahan utara dan selatan, disebut sebagai garis...", a: ["Bujur", "Lintang", "Khatulistiwa", "Meridian"], c: "Khatulistiwa" },
+            { q: "Sistem ekonomi di mana pemerintah memiliki kendali penuh terhadap pasar dan sumber daya produksi disebut dengan sistem ekonomi...", a: ["Liberal", "Tradisional", "Komando", "Campuran"], c: "Komando" },
+            { q: "Interaksi sosial yang bersifat positif dan mengarah pada persatuan, seperti kerjasama atau akomodasi, disebut dengan interaksi...", a: ["Disosiatif", "Asosiatif", "Kompetitif", "Konflik"], c: "Asosiatif" },
+            {
+              q: "Lembaga sosial yang bertugas mengatur hubungan antara manusia dalam memenuhi kebutuhan hidup sehari-hari melalui proses jual beli adalah...",
+              a: ["Lembaga Pendidikan", "Lembaga Politik", "Lembaga Ekonomi", "Lembaga Agama"],
+              c: "Lembaga Ekonomi",
+            },
+            { q: "Kondisi rata-rata cuaca di suatu wilayah yang luas dan dalam jangka waktu yang sangat lama (minimal 30 tahun) disebut dengan...", a: ["Suhu", "Iklim", "Musim", "Angin"], c: "Iklim" },
+            { q: "Zaman di mana manusia belum mengenal tulisan dalam sejarah perkembangan peradaban disebut dengan zaman...", a: ["Sejarah", "Prasejarah/Praaksara", "Modern", "Klasik"], c: "Prasejarah/Praaksara" },
+            { q: "Barang yang jumlahnya terbatas dan memerlukan pengorbanan atau biaya untuk mendapatkannya dalam ilmu ekonomi disebut barang...", a: ["Bebas", "Ekonomi", "Ilith", "Substitusi"], c: "Ekonomi" },
+            { q: "Perpindahan penduduk dari desa ke kota dengan tujuan mencari pekerjaan atau kehidupan yang lebih baik disebut...", a: ["Transmigrasi", "Emigrasi", "Urbanisasi", "Imigrasi"], c: "Urbanisasi" },
+            { q: "Kumpulan orang yang memiliki kesadaran bersama akan keanggotaannya dan saling berinteraksi secara rutin disebut...", a: ["Massa", "Kerumunan", "Kelompok Sosial", "Publik"], c: "Kelompok Sosial" },
+            { q: "Suku bangsa asli yang mendiami wilayah benua Australia sebelum kedatangan bangsa Eropa adalah suku...", a: ["Indian", "Aborigin", "Maori", "Baduy"], c: "Aborigin" },
+            { q: "Ilmu yang mempelajari tentang peta dan pembuatan peta secara sistematis disebut...", a: ["Geologi", "Kartografi", "Demografi", "Sosiologi"], c: "Kartografi" },
+            { q: "Keadaan di mana harga barang-barang secara umum mengalami kenaikan secara terus menerus dalam jangka waktu tertentu disebut...", a: ["Deflasi", "Inflasi", "Investasi", "Resesi"], c: "Inflasi" },
+            { q: "Benua yang dijuluki sebagai Benua Hitam karena mayoritas penduduknya berasal dari ras Negroid adalah benua...", a: ["Asia", "Eropa", "Afrika", "Australia"], c: "Afrika" },
+            { q: "Bentuk muka bumi yang menjulang tinggi dengan puncak yang runcing dan memiliki ketinggian lebih dari 600 meter di atas permukaan laut disebut...", a: ["Bukit", "Dataran Tinggi", "Gunung", "Lembah"], c: "Gunung" },
+          ],
+          SEJARAH: [
+            { q: "Kerajaan Hindu tertua di Indonesia yang terletak di wilayah Kalimantan Timur dan dibuktikan dengan penemuan prasasti Yupa adalah kerajaan...", a: ["Tarumanegara", "Majapahit", "Kutai", "Sriwijaya"], c: "Kutai" },
+            { q: "Kerajaan maritim terbesar di Nusantara yang menjadi pusat penyebaran agama Buddha dan pendidikan di Asia Tenggara adalah kerajaan...", a: ["Mataram Kuno", "Sriwijaya", "Singasari", "Samudera Pasai"], c: "Sriwijaya" },
+            { q: "Candi Borobudur yang merupakan mahakarya arsitektur Buddha terbesar di dunia dibangun oleh dinasti atau wangsa...", a: ["Sanjaya", "Syailendra", "Isyana", "Girindra"], c: "Syailendra" },
+            { q: "Sumpah yang diucapkan oleh Patih Gajah Mada untuk menyatukan Nusantara di bawah naungan Kerajaan Majapahit adalah sumpah...", a: ["Pemuda", "Palapa", "Amukti", "Sakti"], c: "Palapa" },
+            { q: "Bangsa Eropa pertama yang berhasil mendarat di Maluku untuk mencari rempah-rempah pada tahun 1512 adalah bangsa...", a: ["Belanda", "Inggris", "Spanyol", "Portugis"], c: "Portugis" },
+            { q: "Kerajaan Islam pertama di pulau Jawa yang didirikan oleh Raden Patah dan menjadi pusat penyebaran Islam oleh Wali Songo adalah...", a: ["Demak", "Banten", "Mataram Islam", "Cirebon"], c: "Demak" },
+            {
+              q: "Sultan dari Kerajaan Gowa-Tallo yang mendapat julukan 'Ayam Jantan dari Timur' karena keberaniannya melawan penjajahan Belanda adalah...",
+              a: ["Sultan Ageng Tirtayasa", "Sultan Hasanuddin", "Sultan Baabullah", "Sultan Hairun"],
+              c: "Sultan Hasanuddin",
+            },
+            { q: "Paham yang menekankan pada kejayaan bangsa sendiri dan cinta tanah air secara berlebihan hingga muncul gerakan kemerdekaan disebut...", a: ["Sosialisme", "Liberalisme", "Nasionalisme", "Komunisme"], c: "Nasionalisme" },
+            { q: "Perlawanan rakyat Maluku melawan Belanda yang dipimpin oleh Kapitan Pattimura terjadi pada tahun...", a: ["1817", "1825", "1908", "1945"], c: "1817" },
+            {
+              q: "Organisasi pergerakan nasional pertama di Indonesia yang didirikan pada 20 Mei 1908 dan menjadi tonggak Kebangkitan Nasional adalah...",
+              a: ["Sarekat Islam", "Budi Utomo", "Indische Partij", "Muhammadiyah"],
+              c: "Budi Utomo",
+            },
+            { q: "Tokoh yang dikenal sebagai Bapak Pendidikan Nasional dan pendiri perguruan Taman Siswa adalah...", a: ["Ir. Soekarno", "Ki Hajar Dewantara", "Moh. Hatta", "Dr. Sutomo"], c: "Ki Hajar Dewantara" },
+            {
+              q: "Peristiwa penculikan Soekarno dan Hatta oleh golongan muda ke luar kota untuk mendesak segera dilakukannya proklamasi disebut peristiwa...",
+              a: ["Bandung Lautan Api", "Rengasdengklok", "Trisakti", "G30S"],
+              c: "Rengasdengklok",
+            },
+            {
+              q: "Naskah Proklamasi Kemerdekaan Indonesia disusun oleh Soekarno, Hatta, dan Achmad Soebardjo di rumah seorang perwira Jepang bernama...",
+              a: ["Jenderal Terauchi", "Laksamana Maeda", "Laksamana Shibata", "Jenderal Nishimura"],
+              c: "Laksamana Maeda",
+            },
+            { q: "Tujuan utama kedatangan bangsa Belanda (VOC) ke Indonesia pada awalnya adalah untuk...", a: ["Menyebarkan Agama", "Menjajah Wilayah", "Berdagang Rempah", "Mencari Emas"], c: "Berdagang Rempah" },
+            { q: "Prasasti yang ditemukan di Bogor yang menyebutkan tentang kejayaan Raja Purnawarman dari Kerajaan Tarumanegara adalah prasasti...", a: ["Ciaruteun", "Kebon Kopi", "Jambu", "Muara Cianten"], c: "Ciaruteun" },
+          ],
+        },
+        11: {
+          AGAMA: [
+            {
+              q: "Dalam mengelola harta, umat Muslim diwajibkan mengeluarkan sebagian kecil asetnya untuk membantu fakir miskin. Jika harta tersebut berupa emas yang sudah mencapai nishab dan haul, maka wajib dikeluarkan...",
+              a: ["Zakat Fitrah", "Zakat Mal", "Zakat Profesi", "Sadaqah Jariyah"],
+              c: "Zakat Mal",
+            },
+            { q: "Sikap berani membela kebenaran meskipun harus menghadapi risiko atau tantangan yang berat demi keadilan dalam agama Islam disebut dengan istilah...", a: ["Shaja'ah", "Tawakal", "Sabar", "Qana'ah"], c: "Shaja'ah" },
+            {
+              q: "Organisasi Islam yang didirikan oleh KH Ahmad Dahlan di Yogyakarta pada tahun 1912 dengan tujuan memurnikan ajaran Islam di Indonesia adalah...",
+              a: ["Nahdlatul Ulama", "Muhammadiyah", "Sarekat Islam", "Persis"],
+              c: "Muhammadiyah",
+            },
+            { q: "Hukum bagi seorang Muslim yang memandikan, mengkafani, menyalatkan, hingga menguburkan jenazah sesama Muslim adalah...", a: ["Fardu Ain", "Fardu Kifayah", "Sunnah Muakkad", "Mubah"], c: "Fardu Kifayah" },
+            {
+              q: "Surah dalam Al-Quran yang menjelaskan tentang perintah untuk saling mengenal antar suku dan bangsa (Lita'arafu) demi menjaga kerukunan adalah...",
+              a: ["Al-Hujurat ayat 13", "Al-Baqarah ayat 2", "Al-Maidah ayat 3", "Yasin ayat 1"],
+              c: "Al-Hujurat ayat 13",
+            },
+            { q: "Keyakinan bahwa Allah memiliki sifat 'Baqa' berarti Allah itu Kekal. Sifat lawan yang mustahil dimiliki Allah karena Allah tidak akan pernah binasa adalah...", a: ["Adam", "Fana", "Mautun", "Huduts"], c: "Fana" },
+            {
+              q: "Nabi yang memiliki mukjizat berupa kesabaran luar biasa saat diuji dengan penyakit kulit bertahun-tahun dan kehilangan harta serta keluarga adalah...",
+              a: ["Nabi Yusuf", "Nabi Ayub", "Nabi Yunus", "Nabi Luth"],
+              c: "Nabi Ayub",
+            },
+            { q: "Seseorang yang dipercaya untuk memegang rahasia atau menjaga titipan orang lain tanpa berkhianat menunjukkan bahwa ia memiliki sifat...", a: ["Sidiq", "Amanah", "Tabligh", "Fathonah"], c: "Amanah" },
+            {
+              q: "Kitab suci Al-Quran diturunkan secara berangsur-angsur selama kurang lebih 23 tahun. Peristiwa turunnya Al-Quran pertama kali disebut dengan...",
+              a: ["Isra Miraj", "Nuzulul Quran", "Lailatul Qadar", "Maulid Nabi"],
+              c: "Nuzulul Quran",
+            },
+            { q: "Pembagian harta warisan dalam Islam diatur secara detail dalam ilmu yang disebut sebagai ilmu...", a: ["Fikih", "Mantiq", "Farid/Mawaris", "Tauhid"], c: "Farid/Mawaris" },
+            { q: "Paham yang meyakini bahwa hanya ada satu Tuhan yang berhak disembah tanpa ada sekutu bagi-Nya merupakan inti dari ajaran...", a: ["Tauhid", "Syirik", "Kufur", "Nifak"], c: "Tauhid" },
+            {
+              q: "Hukum melakukan pernikahan dalam Islam bertujuan untuk membentuk keluarga yang sakinah, mawaddah, dan warahmah. Rukun nikah yang utama adalah adanya...",
+              a: ["Mahar", "Wali dan Saksi", "Resepsi", "Undangan"],
+              c: "Wali dan Saksi",
+            },
+            {
+              q: "Perjalanan malam Nabi Muhammad SAW dari Masjidil Haram ke Masjidil Aqsa lalu naik ke Sidratul Muntaha untuk menerima perintah shalat adalah...",
+              a: ["Hijrah", "Isra Miraj", "Fathu Mekkah", "Perang Badar"],
+              c: "Isra Miraj",
+            },
+            { q: "Dalam menyikapi perbedaan pendapat dalam masalah furu'iyah (cabang), umat Islam diajarkan untuk bersikap lapang dada yang disebut...", a: ["Ijtihad", "Ukhuwah", "Ikhtilaf", "Taqlid"], c: "Ikhtilaf" },
+            { q: "Masa di mana para pemikir Islam melakukan penerjemahan besar-besaran karya Yunani ke bahasa Arab di Baitul Hikmah terjadi pada masa Daulah...", a: ["Umayyah", "Abbasiyah", "Utsmaniyah", "Mughal"], c: "Abbasiyah" },
+          ],
+          IPA: [
+            { q: "Setiap makhluk hidup tersusun dari unit terkecil yang memiliki membran. Sel yang tidak memiliki membran inti atau nukleus disebut sel...", a: ["Eukariot", "Prokariot", "Mitokondria", "Ribosom"], c: "Prokariot" },
+            {
+              q: "Hukum Fisika yang menyatakan bahwa percepatan sebuah benda berbanding lurus dengan gaya yang bekerja dan berbanding terbalik dengan massanya adalah...",
+              a: ["Hukum Newton I", "Hukum Newton II", "Hukum Newton III", "Hukum Pascal"],
+              c: "Hukum Newton II",
+            },
+            { q: "Organel sel yang berfungsi sebagai tempat respirasi seluler dan pusat penghasil energi (ATP) bagi aktivitas makhluk hidup adalah...", a: ["Nukleus", "Vakuola", "Mitokondria", "Lisosom"], c: "Mitokondria" },
+            { q: "Proses perpindahan molekul dari konsentrasi tinggi ke konsentrasi rendah melalui membran selektif permeabel disebut...", a: ["Osmosis", "Difusi", "Endositosis", "Eksositosis"], c: "Osmosis" },
+            { q: "Dalam sistem periodik, logam yang paling ringan dan sering digunakan sebagai bahan utama pembuatan baterai kendaraan listrik saat ini adalah...", a: ["Emas", "Litium", "Aluminium", "Tembaga"], c: "Litium" },
+            { q: "Organ pencernaan manusia yang berfungsi menyerap sari-sari makanan setelah melewati lambung adalah...", a: ["Usus Besar", "Usus Halus", "Kerongkongan", "Hati"], c: "Usus Halus" },
+            { q: "Jenis batuan yang terbentuk dari proses pendinginan magma atau lava yang membeku disebut batuan...", a: ["Sedimen", "Metamorf", "Beku", "Gamping"], c: "Beku" },
+            { q: "Kelenjar dalam tubuh manusia yang dijuluki sebagai 'Master of Glands' karena mengatur fungsi kelenjar lainnya adalah kelenjar...", a: ["Tiroid", "Adrenal", "Pituitari/Hipofisis", "Pankreas"], c: "Pituitari/Hipofisis" },
+            { q: "Satuan internasional yang digunakan untuk menyatakan intensitas cahaya dalam ilmu fisika adalah...", a: ["Candela", "Kelvin", "Mol", "Kilogram"], c: "Candela" },
+            { q: "Cairan yang berfungsi sebagai pelumas pada sendi manusia agar tulang tidak saling bergesekan dan mengalami kerusakan disebut cairan...", a: ["Limfa", "Sinovial", "Plasma", "Empedu"], c: "Sinovial" },
+            { q: "Hukum yang menyatakan bahwa energi tidak dapat diciptakan maupun dimusnahkan, melainkan hanya bisa berubah bentuk adalah hukum...", a: ["Termodinamika I", "Termodinamika II", "Arsipedes", "Ohm"], c: "Termodinamika I" },
+            { q: "Unsur kimia yang merupakan komponen utama penyusun baja dan memiliki lambang 'Fe' adalah...", a: ["Timah", "Besi", "Perunggu", "Seng"], c: "Besi" },
+            { q: "Bagian mata yang berfungsi mengatur jumlah cahaya yang masuk ke dalam mata melalui pupil adalah...", a: ["Retina", "Iris", "Lensa", "Kornea"], c: "Iris" },
+            { q: "Gas yang paling melimpah di atmosfer Bumi, mencapai sekitar 78% dari total volume udara, adalah...", a: ["Oksigen", "Karbon Dioksida", "Nitrogen", "Argon"], c: "Nitrogen" },
+            { q: "Alat optik yang digunakan untuk melihat benda-benda yang sangat kecil, seperti bakteri atau sel, yang tidak dapat dilihat mata telanjang adalah...", a: ["Teleskop", "Lup", "Mikroskop", "Periskop"], c: "Mikroskop" },
+          ],
+          IPS: [
+            { q: "Kondisi di mana seorang individu atau kelompok tidak mampu memenuhi kebutuhan dasar hidupnya secara layak disebut sebagai...", a: ["Kriminalitas", "Kemiskinan", "Pengangguran", "Kesenjangan"], c: "Kemiskinan" },
+            { q: "Ilmu yang secara khusus mempelajari tentang dinamika penduduk, seperti kelahiran, kematian, dan migrasi, disebut...", a: ["Sosiologi", "Antropologi", "Demografi", "Geologi"], c: "Demografi" },
+            { q: "Badan usaha yang modalnya dimiliki oleh negara dengan tujuan memberikan pelayanan publik sekaligus mencari keuntungan disebut...", a: ["BUMS", "BUMN", "Koperasi", "Firma"], c: "BUMN" },
+            { q: "Struktur pasar di mana hanya terdapat satu penjual yang menguasai seluruh penawaran barang atau jasa tanpa ada pesaing adalah...", a: ["Oligopoli", "Monopoli", "Pasar Persaingan Sempurna", "Monopsoni"], c: "Monopoli" },
+            { q: "Sikap yang cenderung melihat kebudayaan orang lain dari sudut pandang kebudayaan sendiri dan merasa budayanya paling unggul disebut...", a: ["Relativisme", "Etnosentrisme", "Pluralisme", "Asimilasi"], c: "Etnosentrisme" },
+            { q: "Inflasi yang terjadi karena kenaikan biaya produksi barang secara umum di pasar disebut dengan...", a: ["Demand Pull Inflation", "Cost Push Inflation", "Deflasi", "Hiperinflasi"], c: "Cost Push Inflation" },
+            { q: "Lembaga internasional yang bertugas menjaga stabilitas moneter global dan memberikan pinjaman kepada negara anggota adalah...", a: ["UNESCO", "WHO", "IMF", "UNICEF"], c: "IMF" },
+            { q: "Kerjasama ekonomi antara negara-negara yang berada dalam satu wilayah geografis yang berdekatan disebut kerjasama...", a: ["Multilateral", "Regional", "Bilateral", "Internasional"], c: "Regional" },
+            { q: "Proses mendunianya suatu nilai, budaya, atau sistem ekonomi yang membuat batas-batas antarnegara menjadi semakin kabur disebut...", a: ["Urbanisasi", "Globalisasi", "Modernisasi", "Westernisasi"], c: "Globalisasi" },
+            { q: "Sosiologi pertama kali diperkenalkan oleh seorang pemikir asal Prancis yang dianggap sebagai Bapak Sosiologi Dunia, yaitu...", a: ["Karl Marx", "Max Weber", "Auguste Comte", "Emile Durkheim"], c: "Auguste Comte" },
+            { q: "Kesenjangan sosial ekonomi yang terjadi karena distribusi pendapatan yang tidak merata dalam masyarakat diukur dengan...", a: ["Indeks Gini", "PDB", "IHK", "Kurs"], c: "Indeks Gini" },
+            { q: "Benua terkecil di dunia yang juga merupakan sebuah negara berdaulat di belahan bumi selatan adalah...", a: ["Eropa", "Australia", "Antartika", "Amerika Latin"], c: "Australia" },
+            { q: "Sistem kasta yang membagi strata masyarakat berdasarkan kelahiran merupakan ciri khas pelapisan sosial tertutup di negara...", a: ["Inggris", "Amerika", "India", "Jepang"], c: "India" },
+            { q: "Kegiatan menghasilkan atau menambah nilai guna suatu barang atau jasa untuk memenuhi kebutuhan manusia disebut...", a: ["Konsumsi", "Distribusi", "Produksi", "Investasi"], c: "Produksi" },
+            { q: "Garis khayal yang menghubungkan kutub utara dan kutub selatan bumi, digunakan untuk menentukan zona waktu, disebut garis...", a: ["Lintang", "Bujur", "Ekuator", "Zonasi"], c: "Bujur" },
+          ],
+          SEJARAH: [
+            { q: "Gubernur Jenderal Belanda yang memerintahkan pembangunan jalan raya pos dari Anyer hingga Panarukan (Jalan De Grote Postweg) adalah...", a: ["Van den Bosch", "Daendels", "Raffles", "Janssens"], c: "Daendels" },
+            { q: "Kebijakan Tanam Paksa atau Cultuurstelsel yang sangat menyengsara rakyat Indonesia dicetuskan oleh Gubernur Jenderal...", a: ["Daendels", "Van den Bosch", "Cornelis de Houtman", "Pieter Both"], c: "Van den Bosch" },
+            { q: "Organisasi politik pertama di Hindia Belanda yang secara terang-terangan menuntut kemerdekaan Indonesia adalah...", a: ["Budi Utomo", "Sarekat Islam", "Indische Partij", "PNI"], c: "Indische Partij" },
+            {
+              q: "Sumpah Pemuda yang dihasilkan pada Kongres Pemuda II tanggal 28 Oktober 1928 mengandung tiga butir kesepakatan utama, yaitu...",
+              a: ["Satu Nusa, Bangsa, Bahasa", "Satu Bendera, Lagu, Bahasa", "Satu Tanah Air, Raja, Agama", "Satu Ideologi, Negara, Bangsa"],
+              c: "Satu Nusa, Bangsa, Bahasa",
+            },
+            {
+              q: "Tujuan utama Jepang menjanjikan kemerdekaan kepada bangsa Indonesia melalui pembentukan BPUPKI adalah untuk...",
+              a: ["Memberi Hadiah", "Membantu Rakyat", "Menarik Dukungan Melawan Sekutu", "Menyebar Ideologi"],
+              c: "Menarik Dukungan Melawan Sekutu",
+            },
+            {
+              q: "Ketua organisasi BPUPKI (Badan Penyelidik Usaha-usaha Persiapan Kemerdekaan Indonesia) adalah seorang dokter bernama...",
+              a: ["Dr. Soepomo", "Dr. Radjiman Wedyodiningrat", "Dr. Sutomo", "Dr. Mohammad Hatta"],
+              c: "Dr. Radjiman Wedyodiningrat",
+            },
+            {
+              q: "Peristiwa menyerahnya Jepang tanpa syarat kepada Sekutu terjadi setelah dua kota utamanya dibom atom oleh Amerika Serikat, yaitu kota...",
+              a: ["Tokyo dan Osaka", "Hiroshima dan Nagasaki", "Kyoto dan Nagoya", "Saporo dan Kobe"],
+              c: "Hiroshima dan Nagasaki",
+            },
+            {
+              q: "Setelah teks proklamasi diketik oleh Sayuti Melik, naskah tersebut ditandatangani oleh Soekarno dan Hatta atas nama...",
+              a: ["Presiden dan Wapres", "Bangsa Indonesia", "Pemerintah Jepang", "Rakyat Jakarta"],
+              c: "Bangsa Indonesia",
+            },
+            { q: "Bendera Merah Putih yang dikibarkan saat Proklamasi 17 Agustus 1945 dijahit secara langsung oleh istri Bung Karno, yaitu...", a: ["Fatmawati", "Inggit Ganarsih", "Kartini", "Dewi Sartika"], c: "Fatmawati" },
+            {
+              q: "Pertempuran hebat pada 10 November 1945 di Surabaya yang kemudian diperingati sebagai Hari Pahlawan dipicu oleh tewasnya jenderal Inggris bernama...",
+              a: ["Jenderal Terauchi", "Jenderal Mallaby", "Jenderal MacArthur", "Jenderal Mountbatten"],
+              c: "Jenderal Mallaby",
+            },
+            {
+              q: "Perjanjian antara Indonesia dan Belanda yang ditandatangani di atas kapal perang Amerika Serikat pada tahun 1948 adalah...",
+              a: ["Perjanjian Linggarjati", "Perjanjian Renville", "Perjanjian Roem-Royen", "KMB"],
+              c: "Perjanjian Renville",
+            },
+            {
+              q: "Tokoh pergerakan nasional yang dijuluki sebagai 'Singa Podium' karena kemampuan orasinya yang luar biasa dalam membakar semangat rakyat adalah...",
+              a: ["Mohammad Hatta", "Tan Malaka", "Ir. Soekarno", "Sutan Syahrir"],
+              c: "Ir. Soekarno",
+            },
+            { q: "Organisasi semi-militer bentukan Jepang yang beranggotakan para pemuda dan berfungsi sebagai barisan cadangan adalah...", a: ["Peta", "Seinedan", "Keibodan", "Heiho"], c: "Seinedan" },
+            {
+              q: "Isi dari Trilogi Van Deventer (Politik Etis) yang diterapkan Belanda sebagai balas budi kepada rakyat Indonesia mencakup...",
+              a: ["Pajak, Kerja Paksa, Upeti", "Irigasi, Emigrasi, Edukasi", "Eksploitasi, Korupsi, Kolusi", "Perang, Damai, Dagang"],
+              c: "Irigasi, Emigrasi, Edukasi",
+            },
+            {
+              q: "Kapal pertama bangsa Belanda yang berhasil mendarat di pelabuhan Banten pada tahun 1596 dipimpin oleh penjelajah bernama...",
+              a: ["Alfonso d'Albuquerque", "Cornelis de Houtman", "Vasco da Gama", "Marco Polo"],
+              c: "Cornelis de Houtman",
+            },
+          ],
+        },
+        12: {
+          AGAMA: [
+            { q: "Islam sangat mendorong umatnya untuk bekerja keras dan mandiri. Sikap menerima dengan syukur apa yang telah diusahakan dengan maksimal disebut...", a: ["Tawakal", "Qana'ah", "Sabar", "Istiqomah"], c: "Qana'ah" },
+            { q: "Surah Luqman dalam Al-Quran banyak memberikan pelajaran tentang pendidikan karakter, terutama nasehat ayah kepada anaknya untuk tidak melakukan...", a: ["Ghibah", "Syirik", "Dusta", "Riba"], c: "Syirik" },
+            { q: "Seorang Muslim yang berpura-pura beriman di depan orang banyak namun dalam hatinya menyimpan kekafiran atau kebencian terhadap Islam disebut...", a: ["Murtad", "Munafik", "Fasik", "Kafir Harbi"], c: "Munafik" },
+            { q: "Hukum menuntut ilmu bagi setiap Muslim laki-laki maupun perempuan sejak dari buaian hingga liang lahat adalah...", a: ["Sunnah", "Mubah", "Wajib/Fardu", "Makruh"], c: "Wajib/Fardu" },
+            {
+              q: "Dalam sejarah perkembangan Islam di Indonesia, para penyebar agama sering menggunakan media budaya seperti wayang. Strategi dakwah ini dilakukan oleh...",
+              a: ["Wali Songo", "Pedagang Gujarat", "Kaum Padri", "Sultan Agung"],
+              c: "Wali Songo",
+            },
+            { q: "Sifat 'Iradat' pada Allah berarti Allah Maha Berkehendak. Lawan sifat mustahil bagi Allah yang berarti Allah tidak mungkin dipaksa adalah...", a: ["Jahlun", "Karohah", "Ajzun", "Mautun"], c: "Karohah" },
+            { q: "Surah yang dikenal sebagai jantungnya Al-Quran dan sering dibaca oleh masyarakat Indonesia saat malam Jumat atau acara kirim doa adalah surah...", a: ["Al-Mulk", "Al-Waqiah", "Yasin", "Ar-Rahman"], c: "Yasin" },
+            { q: "Zakat yang dikeluarkan oleh para pekerja dari penghasilan rutin bulanan mereka yang telah mencapai nishab disebut...", a: ["Zakat Fitrah", "Zakat Profesi", "Zakat Mal", "Zakat Perniagaan"], c: "Zakat Profesi" },
+            { q: "Berikut ini adalah salah satu nama lain hari kiamat yang berarti 'Hari Penimbangan Amal Perbuatan Manusia' yaitu...", a: ["Yaumul Jaza", "Yaumul Hisab", "Yaumul Mizan", "Yaumul Mahsyar"], c: "Yaumul Mizan" },
+            { q: "Tokoh ilmuwan Muslim yang dikenal sebagai Bapak Kedokteran Dunia melalui karyanya 'The Canon of Medicine' adalah...", a: ["Al-Khwarizmi", "Ibnu Sina", "Al-Ghazali", "Ibnu Rusyd"], c: "Ibnu Sina" },
+            { q: "Sikap tetap teguh pendirian dalam menjalankan perintah Allah dan menjauhi larangan-Nya meski banyak rintangan disebut...", a: ["Tawadhu", "Tasamuh", "Istiqomah", "Ikhlas"], c: "Istiqomah" },
+            { q: "Nabi yang memiliki mukjizat bisa berbicara dengan hewan serta menguasai bangsa jin dalam memimpin kerajaannya adalah...", a: ["Nabi Daud", "Nabi Sulaiman", "Nabi Ibrahim", "Nabi Musa"], c: "Nabi Sulaiman" },
+            {
+              q: "Dalam tata cara penyembelihan hewan, syarat utama agar daging hewan tersebut halal dikonsumsi adalah dengan menyebut...",
+              a: ["Nama Pemilik", "Nama Rasul", "Nama Allah (Basmalah)", "Nama Tempat"],
+              c: "Nama Allah (Basmalah)",
+            },
+            { q: "Mempercayai bahwa hidup manusia tidak berakhir di dunia saja melainkan akan berlanjut ke alam akhirat adalah rukun iman ke...", a: ["3", "4", "5", "6"], c: "5" },
+            { q: "Sifat wajib Rasul yang berarti menyampaikan seluruh pesan dari Allah kepada umatnya tanpa ada yang disembunyikan adalah...", a: ["Tabligh", "Fathonah", "Sidiq", "Amanah"], c: "Tabligh" },
+          ],
+          IPA: [
+            { q: "Satuan suhu dalam Sistem Internasional (SI) yang sering digunakan dalam perhitungan fisika dan kimia dasar adalah...", a: ["Celcius", "Fahrenheit", "Kelvin", "Reamur"], c: "Kelvin" },
+            { q: "Bagian atom yang bermuatan negatif dan bergerak mengelilingi inti atom dalam lintasan atau orbit tertentu disebut...", a: ["Proton", "Neutron", "Elektron", "Positron"], c: "Elektron" },
+            { q: "Proses pembelahan sel yang menghasilkan dua sel anakan yang identik dengan jumlah kromosom yang sama dengan sel induk disebut...", a: ["Meiosis", "Mitosis", "Amitosis", "Fertilisasi"], c: "Mitosis" },
+            { q: "Kaca pembesar (Lup) menggunakan lensa tunggal yang bersifat mengumpulkan sinar untuk memperbesar bayangan benda. Lensa ini adalah lensa...", a: ["Cekung", "Cembung", "Datar", "Cekung-Cembung"], c: "Cembung" },
+            { q: "Gas yang paling bertanggung jawab atas terjadinya efek rumah kaca dan pemanasan global akibat aktivitas industri dan pembakaran adalah...", a: ["Oksigen", "Metana", "Karbon Dioksida", "Ozon"], c: "Karbon Dioksida" },
+            { q: "Satuan frekuensi gelombang yang menyatakan jumlah getaran yang terjadi dalam satu detik adalah...", a: ["Watt", "Hertz", "Joule", "Decibel"], c: "Hertz" },
+            { q: "Hormon yang dihasilkan oleh pankreas untuk mengatur kadar gula darah dalam tubuh manusia adalah...", a: ["Adrenalin", "Tiroksin", "Insulin", "Estrogen"], c: "Insulin" },
+            { q: "Zat cair yang digunakan dalam termometer karena memiliki pemuaian yang sangat teratur dan mengkilap sehingga mudah dibaca adalah...", a: ["Air", "Alkohol", "Raksa", "Minyak"], c: "Raksa" },
+            { q: "Gaya yang bekerja pada dua benda yang saling bersentuhan dengan arah yang berlawanan dengan gerak benda disebut gaya...", a: ["Magnet", "Gesek", "Gravitasi", "Otot"], c: "Gesek" },
+            { q: "Planet terbesar dalam sistem tata surya kita yang memiliki banyak satelit alami dan terkenal dengan bintik merah raksasanya adalah...", a: ["Saturnus", "Jupiter", "Neptunus", "Uranus"], c: "Jupiter" },
+            { q: "Unsur kimia yang sangat reaktif, memiliki nomor atom 1, dan merupakan unsur paling ringan di alam semesta adalah...", a: ["Helium", "Hidrogen", "Oksigen", "Karbon"], c: "Hidrogen" },
+            { q: "Sifat bayangan yang dibentuk oleh cermin datar pada benda di depannya adalah...", a: ["Nyata, Terbalik", "Maya, Tegak, Sama Besar", "Nyata, Tegak", "Maya, Diperkecil"], c: "Maya, Tegak, Sama Besar" },
+            { q: "Penemu lampu pijar yang berhasil menciptakan revolusi penerangan dunia setelah melakukan ribuan percobaan adalah...", a: ["Nikola Tesla", "Albert Einstein", "Thomas Alva Edison", "Isaac Newton"], c: "Thomas Alva Edison" },
+            { q: "Energi yang dihasilkan dari aliran elektron-elektron melalui suatu konduktor disebut energi...", a: ["Panas", "Bunyi", "Listrik", "Kimia"], c: "Listrik" },
+            {
+              q: "Hukum yang menyatakan bahwa arus listrik yang mengalir dalam suatu rangkaian berbanding lurus dengan tegangan dan berbanding terbalik dengan hambatan adalah...",
+              a: ["Hukum Pascal", "Hukum Ohm", "Hukum Archimedes", "Hukum Newton"],
+              c: "Hukum Ohm",
+            },
+          ],
+          IPS: [
+            { q: "Organisasi internasional yang bertujuan menjaga perdamaian dan keamanan dunia serta berpusat di New York, Amerika Serikat adalah...", a: ["ASEAN", "PBB (UN)", "NATO", "APEC"], c: "PBB (UN)" },
+            { q: "Sistem pemerintahan di mana kekuasaan tertinggi berada di tangan rakyat dan dijalankan melalui perwakilan yang dipilih disebut...", a: ["Monarki", "Demokrasi", "Oligarki", "Teokrasi"], c: "Demokrasi" },
+            { q: "Kenaikan harga barang secara umum dan terus-menerus yang mengakibatkan daya beli mata uang menurun disebut...", a: ["Deflasi", "Devaluasi", "Inflasi", "Stagnasi"], c: "Inflasi" },
+            { q: "Negara anggota ASEAN yang secara geografis merupakan negara kepulauan terbesar di dunia dan dilalui garis khatulistiwa adalah...", a: ["Filipina", "Indonesia", "Malaysia", "Thailand"], c: "Indonesia" },
+            { q: "Suku bangsa asli yang mendiami wilayah benua Amerika sebelum kedatangan bangsa Eropa (Columbus) adalah suku...", a: ["Aborigin", "Maya/Inca/Indian", "Maori", "Suku Han"], c: "Maya/Inca/Indian" },
+            { q: "Kerjasama ekonomi antarnegara yang bertujuan menghapus hambatan tarif dan perdagangan di kawasan Asia Tenggara adalah...", a: ["AFTA", "NAFTA", "EU", "WTO"], c: "AFTA" },
+            { q: "Salah satu indikator kemakmuran suatu negara yang dihitung dari total nilai produksi barang dan jasa penduduknya dalam satu tahun adalah...", a: ["IHK", "Kurs", "PDB/GDP", "Suku Bunga"], c: "PDB/GDP" },
+            { q: "Cabang ilmu ekonomi yang mempelajari perilaku ekonomi secara keseluruhan atau dalam skala besar (negara) disebut...", a: ["Ekonomi Mikro", "Ekonomi Makro", "Ekonomi Terapan", "Ekonomi Politik"], c: "Ekonomi Makro" },
+            { q: "Garis khayal pada peta yang digunakan untuk menentukan perbedaan waktu di berbagai wilayah dunia adalah garis...", a: ["Lintang", "Bujur", "Isoterm", "Isobar"], c: "Bujur" },
+            { q: "Keinginan manusia yang tidak terbatas untuk mendapatkan barang dan jasa sementara alat pemuasnya terbatas menimbulkan masalah...", a: ["Kelangkaan", "Kekayaan", "Distribusi", "Produksi"], c: "Kelangkaan" },
+            { q: "Benua yang memiliki julukan 'Benua Biru' karena mayoritas penduduknya berasal dari ras Kaukasoid dengan mata biru adalah benua...", a: ["Amerika", "Eropa", "Australia", "Afrika"], c: "Eropa" },
+            {
+              q: "Pasar di mana terdapat banyak penjual dan banyak pembeli untuk satu jenis barang yang identik (homogen) disebut pasar...",
+              a: ["Monopoli", "Oligopoli", "Persaingan Sempurna", "Persaingan Monopolistik"],
+              c: "Persaingan Sempurna",
+            },
+            { q: "Proses asimilasi atau pembauran dua kebudayaan yang berbeda sehingga membentuk kebudayaan baru yang unik disebut...", a: ["Akulturasi", "Difusi", "Integrasi", "Separasi"], c: "Akulturasi" },
+            { q: "Mata uang resmi yang digunakan oleh sebagian besar negara anggota Uni Eropa dalam transaksi ekonominya adalah...", a: ["Dollar", "Euro", "Poundsterling", "Yen"], c: "Euro" },
+            { q: "Paham yang menjunjung tinggi kebebasan individu dalam persaingan pasar ekonomi disebut dengan...", a: ["Sosialisme", "Liberalisme", "Komunisme", "Fasisme"], c: "Liberalisme" },
+          ],
+          SEJARAH: [
+            { q: "Organisasi kerjasama internasional antar negara-negara Asia Tenggara (ASEAN) didirikan di kota Bangkok pada tanggal...", a: ["17 Agustus 1945", "8 Agustus 1967", "20 Mei 1908", "1 Juni 1945"], c: "8 Agustus 1967" },
+            {
+              q: "Presiden Republik Indonesia ke-3 yang dikenal sebagai teknokrat jenius dan berjasa besar dalam industri penerbangan tanah air adalah...",
+              a: ["Abdurrahman Wahid", "BJ Habibie", "Megawati Soekarnoputri", "SBY"],
+              c: "BJ Habibie",
+            },
+            {
+              q: "Konferensi yang diadakan di Bandung pada tahun 1955 untuk menyatukan kekuatan negara-negara Asia dan Afrika dalam melawan kolonialisme disebut...",
+              a: ["KTT ASEAN", "Konferensi Asia Afrika (KAA)", "KMB", "Perjanjian Malino"],
+              c: "Konferensi Asia Afrika (KAA)",
+            },
+            { q: "Gerakan pemberontakan yang terjadi pada malam 30 September 1965 dengan tujuan mengganti ideologi Pancasila menjadi Komunis dikenal sebagai...", a: ["DII/TII", "G30S/PKI", "PRRI/Permesta", "APRA"], c: "G30S/PKI" },
+            {
+              q: "Sistem demokrasi yang diterapkan di Indonesia pada masa Presiden Soekarno tahun 1959-1965 disebut sistem...",
+              a: ["Demokrasi Liberal", "Demokrasi Terpimpin", "Demokrasi Pancasila", "Demokrasi Parlementer"],
+              c: "Demokrasi Terpimpin",
+            },
+            { q: "Lembaga yang dibentuk untuk mempersiapkan kemerdekaan Indonesia dan merumuskan dasar negara (Pancasila) adalah...", a: ["BPUPKI", "PPKI", "KNIP", "BKR"], c: "BPUPKI" },
+            { q: "Peristiwa jatuhnya kekuasaan Orde Baru yang dipimpin oleh Presiden Soeharto pada Mei 1998 memicu dimulainya era...", a: ["Era Kemerdekaan", "Era Orde Lama", "Era Reformasi", "Era Pembangunan"], c: "Era Reformasi" },
+            { q: "Tokoh yang membacakan teks proklamasi kemerdekaan Indonesia dan kemudian menjadi Presiden pertama RI adalah...", a: ["Mohammad Hatta", "Tan Malaka", "Soekarno", "Sutan Syahrir"], c: "Soekarno" },
+            { q: "Negara pertama di dunia yang mengakui kedaulatan kemerdekaan Republik Indonesia secara de jure dan de facto adalah...", a: ["Amerika Serikat", "Belanda", "Mesir", "Australia"], c: "Mesir" },
+            { q: "Paham yang menjadi dasar negara Indonesia dan terdiri dari lima butir kesepakatan luhur para pendiri bangsa adalah...", a: ["Komunisme", "Liberalisme", "Pancasila", "Sosialisme"], c: "Pancasila" },
+            {
+              q: "Nama operasi militer yang dilancarkan Indonesia untuk membebaskan wilayah Irian Barat dari cengkeraman Belanda tahun 1961 adalah...",
+              a: ["Operasi Trikora", "Operasi Dwikora", "Operasi Seroja", "Operasi Pagar Betis"],
+              c: "Operasi Trikora",
+            },
+            { q: "Perang saudara besar yang terjadi antara Amerika Serikat wilayah utara dan selatan (Perang Budak) terjadi pada tahun...", a: ["1776-1783", "1861-1865", "1914-1918", "1939-1945"], c: "1861-1865" },
+            { q: "Organisasi keamanan internasional yang dibentuk oleh negara-negara Barat untuk membendung pengaruh komunisme selama Perang Dingin adalah...", a: ["Pakta Warsawa", "NATO", "SEATO", "ZOPFAN"], c: "NATO" },
+            {
+              q: "Tembok yang memisahkan wilayah Jerman Barat dan Jerman Timur selama Perang Dingin dan menjadi simbol runtuhnya komunisme di Eropa adalah...",
+              a: ["Tembok Besar", "Tembok Berlin", "Tembok Ratapan", "Tembok London"],
+              c: "Tembok Berlin",
+            },
+            { q: "Sistem pemerintahan yang dipimpin oleh seorang raja atau ratu secara turun-temurun disebut dengan sistem...", a: ["Republik", "Monarki", "Federasi", "Otonomi"], c: "Monarki" },
+          ],
+        },
+      };
+
+      let uName = "",
+        uClass = "",
+        qIdx = 0,
+        correctCount = 0,
+        currentPool = [];
+
+      function nav(id) {
+        document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        if (id === "scr-lead") showTable();
+      }
+
+      function goMateri() {
+        uName = document.getElementById("p-name").value;
+        uClass = document.getElementById("p-class").value;
+        if (!uName || !uClass) return alert("Pilot, isi data!");
+        document.getElementById("grade-label").innerText = "KELAS " + uClass;
+        nav("scr-materi");
+      }
+
+      function startQuiz(t) {
+        currentPool = questDB[uClass][t] || [];
+        qIdx = 0;
+        correctCount = 0;
+        document.getElementById("disp-n").innerText = uName;
+        nav("scr-game");
+        loadQ();
+      }
+
+      function loadQ() {
+        if (qIdx >= currentPool.length) return finish();
+        const d = currentPool[qIdx];
+        document.getElementById("q-text").innerHTML = `<b>SOAL ${qIdx + 1}/${currentPool.length}</b><br><br>${d.q}`;
+        const b = document.getElementById("opt-box");
+        b.innerHTML = "";
+        d.a.forEach((v) => {
+          const o = document.createElement("div");
+          o.className = "opt";
+          o.innerHTML = v;
+          o.onclick = () => {
+            if (v === d.c) {
+              o.classList.add("correct");
+              correctCount++;
+              playSfx(880, "sine", 0.2);
+            } else {
+              o.classList.add("wrong");
+              playSfx(150, "sawtooth", 0.3);
+            }
+            document.getElementById("disp-s").innerText = `Benar: ${correctCount}`;
+            setTimeout(() => {
+              qIdx++;
+              loadQ();
+            }, 600);
+          };
+          b.appendChild(o);
+        });
+      }
+
+      function getGrade(score) {
+        if (score >= 85) return "A";
+        if (score >= 70) return "B";
+        if (score >= 50) return "C";
+        return "D";
+      }
+
+      function finish() {
+        const total = currentPool.length;
+        const score = Math.round((correctCount / total) * 100);
+        const grade = getGrade(score);
+        let r = JSON.parse(localStorage.getItem("hnr_final_v8") || "[]");
+        r.push({ n: uName, c: uClass, s: score, b: correctCount, t: total, g: grade });
+        r.sort((a, b) => b.s - a.s);
+        localStorage.setItem("hnr_final_v8", JSON.stringify(r.slice(0, 10)));
+        nav("scr-lead");
+        [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playSfx(f, "sine", 0.4), i * 150));
+      }
+
+      function showTable() {
+        let r = JSON.parse(localStorage.getItem("hnr_final_v8") || "[]");
+        let h = "<tr><th>PILOT</th><th>KLS</th><th>BENAR</th><th>SKOR</th><th>GRADE</th></tr>";
+        r.forEach((x) => {
+          h += `<tr>
+                    <td>${x.n}</td>
+                    <td>${x.c}</td>
+                    <td>${x.b}/${x.t}</td>
+                    <td>${x.s}</td>
+                    <td><span class="grade-pill grade-${x.g}">${x.g}</span></td>
+                </tr>`;
+        });
+        document.getElementById("l-table").innerHTML = r.length ? h : "<tr><td colspan='5'>Belum ada data</td></tr>";
+      }
+
+      function clearData() {
+        if (confirm("Hapus semua?")) {
+          localStorage.removeItem("hnr_final_v8");
+          showTable();
+        }
+      }
+
+      const sf = document.getElementById("starField");
+      for (let i = 0; i < 50; i++) {
+        const s = document.createElement("div");
+        s.className = "star";
+        s.style.width = s.style.height = Math.random() * 3 + "px";
+        s.style.left = Math.random() * 100 + "%";
+        s.style.top = Math.random() * 100 + "%";
+        s.style.animationDuration = Math.random() * 3 + 2 + "s";
+        sf.appendChild(s);
+      }
+    </script>
+  </body>
+</html>
